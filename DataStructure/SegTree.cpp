@@ -20,9 +20,7 @@ public:
 	explicit SegTree(int n) : _n(n), ht(31 - __builtin_clz(n)), tr(n << 1) {}
 	explicit SegTree(int n, S *v) : _n(n), ht(31 - __builtin_clz(n)), tr(n << 1) {
 		for (int i = 1; i <= n; ++i) { tr[i + n - 1] = v[i]; }
-		for (int i = n - 1; i >= 1; --i) {
-			pushup(i);
-		}
+		for (int i = n - 1; i >= 1; --i) { pushup(i); }
 	}
 	void set(int k, S x) {
 		assert(k > 0 && k <= _n);
@@ -68,9 +66,7 @@ public:
 	explicit LazySegTree(int n) : _n(n), ht(31 - __builtin_clz(n)), tr(n << 1), tag(n << 1), vis(n << 1) {}
 	explicit LazySegTree(int n, S *v) : _n(n), ht(31 - __builtin_clz(n)), tr(n << 1), tag(n << 1), vis(n << 1) {
 		for (int i = 1; i <= n; ++i) { tr[i + n - 1] = v[i], vis[i + n - 1] = 1; }
-		for (int i = n - 1; i >= 1; --i) {
-			pushup(i);
-		}
+		for (int i = n - 1; i >= 1; --i) { pushup(i); }
 	}
 	void set(int k, S x) {
 		assert(k > 0 && k <= _n);
@@ -96,8 +92,11 @@ public:
 	}
 	S qry(int k) {
 		assert(k > 0 && k <= _n);
-		down(k);
-		return tr[k + _n - 1];
+		S res = tr[k + _n - 1];
+		for (int kt = k + _n - 1; kt; kt >>= 1) {
+			if (vis[kt]) { res = res + tag[kt]; }
+		}
+		return res;
 	}
 	S qry(int l, int r) {
 		assert(l > 0 && r <= _n);
