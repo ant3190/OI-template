@@ -1,0 +1,86 @@
+struct SuffixArray {
+public:
+	int n;
+	vector<int> sa, rk, ht;
+
+	SuffixArray() = default;
+	template<class S> 
+	SuffixArray(const S& s, int m = -1) {
+		assert(s.size() > 1);
+		n = (int)s.size() - 1;
+		sa.resize(n + 1), rk.resize(n + 1), ht.resize(n + 1);
+
+		if (m == -1) {
+			S v(s.begin() + 1, s.end());
+			sort(v.begin(), v.end());
+			v.erase(unique(v.begin(), v.end()), v.end());
+			for (int i = 1; i <= n; ++i) {
+				rk[i] = lower_bound(v.begin(), v.end(), s[i]) - v.begin() + 1;
+			}
+			m = v.size();
+		} else {
+			for (int i = 1; i <= n; ++i) {
+				rk[i] = s[i];
+				assert(1 <= rk[i] && rk[i] <= m);
+			}
+		}
+
+		vector<int> cnt(max(m, n) + 1, 0), aux(n + 1), nrk(n + 1);
+		for (int i = 1; i <= n; ++i) { ++cnt[rk[i]]; }
+		for (int i = 1; i <= m; ++i) { cnt[i] += cnt[i - 1]; }
+		for (int i = n; i >= 1; --i) { sa[cnt[rk[i]]--] = i; }
+		for (int k = 1; k == 1 || m != n; k <<= 1) {
+			int p = 0;
+			for (int i = n - k + 1; i <= n; ++i) { aux[++p] = i; }
+			for (int i = 1; i <= n; ++i) {
+				if (sa[i] > k) { aux[++p] = sa[i] - k; }
+			}
+			fill(cnt.begin() + 1, cnt.begin() + m + 1, 0);
+			for (int i = 1; i <= n; ++i) { ++cnt[rk[i]]; }
+			for (int i = 1; i <= m; ++i) { cnt[i] += cnt[i - 1]; }
+			for (int i = n; i >= 1; --i) { sa[cnt[rk[aux[i]]]--] = aux[i]; }
+			nrk[sa[1]] = m = 1;
+			for (int i = 2; i <= n; ++i) {
+				int a = sa[i], b = sa[i - 1];
+				m += (rk[a] != rk[b] || (a + k <= n ? rk[a + k] : -1) != (b + k <= n ? rk[b + k] : -1));
+				nrk[a] = m;
+			}
+			swap(nrk, rk);
+		}
+
+		for (int i = 1, j, k = 0; i <= n; ++i) {
+			if (rk[i] == 1) { continue; }
+			if (k) { --k; }
+			j = sa[rk[i] - 1];
+			while (i + k <= n && j + k <= n && s[i + k] == s[j + k]) { ++k; }
+			ht[rk[i]] = k;
+		}
+	}
+
+	int operator[](int id) const {
+		return sa[id];
+	}
+
+	void init_lcp() {
+		int m = 32 - __builtin_clz(n);
+		rmq = vector<vector<int>>(m, vector<int>(n + 1));
+		for (int i = 2; i <= n; ++i) { rmq[0][i] = ht[i]; }
+		for (int i = 1; i < m; ++i) {
+			for (int j = 2; j + (1 << i) - 1 <= n; ++j) {
+				rmq[i][j] = min(rmq[i - 1][j], rmq[i - 1][j + (1 << (i - 1))]);
+			}
+		}
+	}
+
+	int lcp(int i, int j) {
+		assert(!rmq.empty());
+		if (i == j) { return n - i + 1; }
+		i = rk[i], j = rk[j];
+		if (i > j) { swap(i, j); }
+		int t = 31 - __builtin_clz(j - i++);
+		return min(rmq[t][i], rmq[t][j - (1 << t) + 1]);
+	}
+
+private:
+	vector<vector<int>> rmq;
+};
