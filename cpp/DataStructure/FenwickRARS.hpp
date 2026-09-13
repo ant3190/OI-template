@@ -5,7 +5,7 @@
 template<class T>
 struct FenwickRARS {
 public:
-	FenwickRARS() = default
+	FenwickRARS() = default;
 	FenwickRARS(int n) : tr1(n), tr2(n) {}
 
 	void reset(int k) {
