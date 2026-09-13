@@ -12,6 +12,8 @@ public:
 		for (int i = m - 1; i >= 1; --i) { pushup(i); }
 	}
 
+	int size() const { return n; }
+
 	void set(int k, S x) {
 		assert(k > 0 && k <= n);
 		tr[k + m - 1] = x;
@@ -22,7 +24,10 @@ public:
 		tr[k + m - 1] = tr[k + m - 1] + x;
 		up(k);
 	}
-	S qry() { return tr[1]; }
+	S qry() {
+		assert(n != -1);
+		return tr[1];
+	}
 	S qry(int k) {
 		assert(k > 0 && k <= n);
 		return tr[k + m - 1];
@@ -80,7 +85,7 @@ public:
 	void clear() { std::fill(tr.begin(), tr.end(), S()); }
 	
 private:
-	int n, ht, m;
+	int n = -1, ht, m;
 	std::vector<S> tr;
 	void pushup(int p) {
 		tr[p] = tr[p << 1] + tr[p << 1 | 1];
