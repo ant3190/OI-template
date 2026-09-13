@@ -45,7 +45,7 @@ public:
 	S qry(int k) {
 		ASSERT(k > 0 && k <= n);
 		S res = tr[k + m - 1];
-		for (int kt = k + m - 1; kt; kt >>= 1) {
+		for (int kt = (k + m - 1) >> 1; kt; kt >>= 1) {
 			if (vis[kt]) { res = res + tag[kt]; }
 		}
 		return res;
