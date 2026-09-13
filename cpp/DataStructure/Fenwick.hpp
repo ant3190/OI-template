@@ -9,7 +9,7 @@ public:
 	int size() const { return n; }
 
 	void upd(int k, T x) {
-		assert(k > 0 && k <= n + 1);
+		assert(k > 0);
 		for (int kt = k; kt <= n; kt += kt & -kt) { tr[kt + (kt >> 10)] += x; }
 	}
 	void reset(int k) {
