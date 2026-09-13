@@ -1,6 +1,7 @@
 #pragma once
 
-#include<utility/Order.hpp>
+#include "basics/Assert.hpp"
+#include "utility/Order.hpp"
 
 struct SuffixArray {
 public:

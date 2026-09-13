@@ -1,10 +1,12 @@
 #pragma once
 
+#include "basics/Assert.hpp"
+
 template<class T>
 struct MCMF {
 public:
 	MCMF() : n(), dirty() {}
-	MCMF(int n) : n(n), ed(n + 1), par(n + 1), dis(n + 1), pi(n + 1), dirty() {}
+	MCMF(int n) : n(n), dirty(), ed(n + 1), par(n + 1), dis(n + 1), pi(n + 1) {}
 
 	std::pair<int, int> add(int from, int to, T cap, T cost) {
 		assert(cap >= 0);

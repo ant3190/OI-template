@@ -1,5 +1,7 @@
 #pragma once
 
+#include "basics/Assert.hpp"
+
 template<class T>
 struct Dinic {
 public:

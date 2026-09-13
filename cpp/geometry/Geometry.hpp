@@ -1,5 +1,7 @@
 #pragma once
 
+#include "basics/Assert.hpp"
+
 namespace Geometry {
 template<class T> constexpr T eps_v = static_cast<T>(1e-9L);
 
@@ -37,7 +39,7 @@ template<class P> double dist(P a, P b) { return (b - a).len(); }
 
 // 1/0/-1 : Left/On line/Right
 template<class P> int side_of(P s, P e, P p) { return sgn((e - s) ^ (p - s)); }
-template<class P> double line_dist(P s, P e, P p) { assert(s != e); return std::fabs((double)((e - s) ^ (p - s)) / (e - s).len()); }
+template<class P> double line_dist(P s, P e, P p) { ASSERT(s != e); return std::fabs((double)((e - s) ^ (p - s)) / (e - s).len()); }
 template<class P> double seg_dist(P s, P e, P p) {
 	if (s == e) { return (p - s).len(); }
 	P v1 = e - s, v2 = p - s, v3 = p - e;
@@ -48,7 +50,7 @@ template<class P> double seg_dist(P s, P e, P p) {
 
 template<class P> bool on_seg(P s, P e, P p, bool incl = 1) { return !side_of(s, e, p) && sgn((s - p) * (e - p)) < (int)incl; }
 template<class P> bool line_seg_cross(P s1, P e1, P s2, P e2, bool incl = 1) { 
-	assert(s1 != e1);
+	ASSERT(s1 != e1);
 	return side_of(s1, e1, s2) * side_of(s1, e1, e2) < (int)incl;
 }
 template<class P> bool seg_cross(P s1, P e1, P s2, P e2, bool incl = 1) {
@@ -58,7 +60,7 @@ template<class P> bool seg_cross(P s1, P e1, P s2, P e2, bool incl = 1) {
 
 // 1/0/-1 : Intersect/Parallel/Coincident
 template<class P> std::pair<int, P> line_inter(P s1, P e1, P s2, P e2) {
-	assert(s1 != e1 && s2 != e2);
+	ASSERT(s1 != e1 && s2 != e2);
 	auto l = (e1 - s1) ^ (e2 - s2);
 	if (!sgn(l)) {
 		return {-(side_of(s1, e1, s2) == 0), P(0, 0)};
@@ -67,7 +69,7 @@ template<class P> std::pair<int, P> line_inter(P s1, P e1, P s2, P e2) {
 	return {1, (s1 * p + e1 * q) / l};
 }
 template<class P> P line_proj(P s, P e, P p) {
-	assert(s != e);
+	ASSERT(s != e);
 	P v = e - s;
 	return s + v * ((p - s) * v / v.len2());
 }
@@ -141,7 +143,7 @@ template<class P> bool in_convex(const std::vector<P>& v, P p, bool incl = 1) {
 }
 
 template<class P> int tangent_point(const std::vector<P> &v, P d) {
-	assert(!v.empty() && d != P());
+	ASSERT(!v.empty() && d != P());
 	int n = v.size(), l = 0, r = n - 1;
 	if (n == 1) { return 0; }
 	P vl = v[1] - v[0];
