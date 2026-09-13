@@ -9,11 +9,11 @@ public:
 	int size() const { return n; }
 
 	void upd(int k, T x) {
-		assert(k > 0);
+		assert(n != -1 && k > 0);
 		for (int kt = k; kt <= n; kt += kt & -kt) { tr[kt + (kt >> 10)] += x; }
 	}
 	void reset(int k) {
-		assert(k > 0);
+		assert(n != -1 && k > 0);
 		for (int kt = k; kt <= n; kt += kt & -kt) { tr[kt + (kt >> 10)] = T(); }
 	}
 	T qry(int k) {

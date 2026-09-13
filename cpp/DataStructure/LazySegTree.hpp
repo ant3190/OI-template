@@ -12,6 +12,8 @@ public:
 		for (int i = m - 1; i >= 1; --i) { pushup(i); }
 	}
 
+	int size() const { return n; }
+
 	void set(int k, S x) {
 		assert(k > 0 && k <= n);
 		down(k);
@@ -34,7 +36,10 @@ public:
 		}
 		up(l), up(r);
 	}
-	S qry() { return tr[1]; }
+	S qry() {
+		assert(n != -1);
+		return tr[1];
+	}
 	S qry(int k) {
 		assert(k > 0 && k <= n);
 		S res = tr[k + m - 1];
@@ -113,7 +118,7 @@ public:
 	}
 	
 private:
-	int n, ht, m;
+	int n = -1, ht, m;
 	std::vector<S> tr;
 	std::vector<T> tag;
 	std::vector<int> vis;

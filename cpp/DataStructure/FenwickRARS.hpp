@@ -8,6 +8,8 @@ public:
 	FenwickRARS() = default;
 	FenwickRARS(int n) : tr1(n), tr2(n) {}
 
+	int size() const { return tr1.size(); }
+
 	void reset(int k) {
 		tr1.reset(k), tr2.reset(k);
 	}
