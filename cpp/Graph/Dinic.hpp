@@ -1,10 +1,12 @@
+#pragma once
+
 template<class T>
 struct Dinic {
 public:
 	Dinic() : n() {}
 	Dinic(int n) : n(n), ed(n + 1), dis(n + 1), qu(n + 1), ptr(n + 1) {}
 
-	pair<int, int> adde(int from, int to, T cap) {
+	pair<int, int> add(int from, int to, T cap) {
 		assert(cap >= 0);
 		int id = (int)ed[from].size(), rev = (int)ed[to].size() + (from == to);
 		ed[from].push_back(edge(to, rev, cap));
@@ -21,7 +23,7 @@ public:
 		return res;
 	}
 
-	pair<T, T> getflow(pair<int, int> id) {
+	pair<T, T> get_flow(pair<int, int> id) {
 		auto [u, i] = id;
 		edge &e = ed[u][i], &r = ed[e.to][e.rev];
 		return {r.cap, e.cap + r.cap};

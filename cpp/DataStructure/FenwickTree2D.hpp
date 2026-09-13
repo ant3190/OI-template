@@ -1,3 +1,5 @@
+#pragma once
+
 template<class T>
 struct FenwickTree2D {
 public:

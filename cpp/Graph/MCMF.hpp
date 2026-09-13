@@ -1,10 +1,12 @@
+#pragma once
+
 template<class T>
 struct MCMF {
 public:
 	MCMF() : n(), dirty() {}
 	MCMF(int n) : n(n), ed(n + 1), par(n + 1), dis(n + 1), pi(n + 1), dirty() {}
 
-	pair<int, int> adde(int from, int to, T cap, T cost) {
+	pair<int, int> add(int from, int to, T cap, T cost) {
 		assert(cap >= 0);
 		dirty |= (cap && pi[from] != inf && pi[from] + cost < pi[to]);
 		int id = (int)ed[from].size(), rev = (int)ed[to].size() + (from == to);
@@ -33,7 +35,7 @@ public:
 		return res;
 	}
 
-	pair<T, T> getflow(pair<int, int> id) {
+	pair<T, T> get_flow(pair<int, int> id) {
 		auto [u, i] = id;
 		edge &e = ed[u][i], &r = ed[e.to][e.rev];
 		return {r.cap, e.cap + r.cap};

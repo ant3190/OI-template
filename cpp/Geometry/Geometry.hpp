@@ -1,3 +1,5 @@
+#pragma once
+
 namespace Geometry {
 template<class T> constexpr T eps_v = static_cast<T>(1e-9L);
 

@@ -1,3 +1,5 @@
+#pragma once
+
 template<class S>
 vector<pair<int, int>> duval(const S& s) {
 	int n = s.size() - 1;

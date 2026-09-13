@@ -1,3 +1,7 @@
+#pragma once
+
+#include<Utility/Order.hpp>
+
 struct SuffixArray {
 public:
 	int n;
@@ -11,13 +15,7 @@ public:
 		sa.resize(n + 1), rk.resize(n + 1), ht.resize(n + 1);
 
 		if (m == -1) {
-			S v(s.begin() + 1, s.end());
-			sort(v.begin(), v.end());
-			v.erase(unique(v.begin(), v.end()), v.end());
-			for (int i = 1; i <= n; ++i) {
-				rk[i] = lower_bound(v.begin(), v.end(), s[i]) - v.begin() + 1;
-			}
-			m = v.size();
+			m = rank_compress(s.begin() + 1, s.end(), rk.begin() + 1).size();
 		} else {
 			for (int i = 1; i <= n; ++i) {
 				rk[i] = s[i];
@@ -57,7 +55,7 @@ public:
 		}
 	}
 
-	int operator[](int id) const {
+	int operator[](const int &id) const {
 		return sa[id];
 	}
 
