@@ -1,10 +1,10 @@
 #pragma once
 
 template<class T>
-struct FenwickTree {
+struct Fenwick {
 public:
-	FenwickTree() = default;
-	FenwickTree(int n) : n(n), tr(n + 1 + (n >> 10)) {}
+	Fenwick() = default;
+	Fenwick(int n) : n(n), tr(n + 1 + (n >> 10)) {}
 
 	void upd(int k, T x) {
 		assert(k > 0);

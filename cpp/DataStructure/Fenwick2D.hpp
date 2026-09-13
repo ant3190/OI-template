@@ -1,10 +1,10 @@
 #pragma once
 
 template<class T>
-struct FenwickTree2D {
+struct Fenwick2D {
 public:
-	FenwickTree2D() = default;
-	FenwickTree2D(int n, int m) : 
+	Fenwick2D() = default;
+	Fenwick2D(int n, int m) : 
 		n(n), m(m), tr((n + 1) * (m + 13), T()) {}
 
 	void upd(int x, int y, T val) {

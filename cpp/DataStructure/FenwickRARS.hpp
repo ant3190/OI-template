@@ -1,12 +1,12 @@
 #pragma once
 
-#include "DataStructure/FenwickTree.hpp"
+#include "DataStructure/Fenwick.hpp"
 
 template<class T>
-struct FenwickTreeRARS {
+struct FenwickRARS {
 public:
-	FenwickTreeRARS() = default
-	FenwickTreeRARS(int n) : tr1(n), tr2(n) {}
+	FenwickRARS() = default
+	FenwickRARS(int n) : tr1(n), tr2(n) {}
 
 	void reset(int k) {
 		tr1.reset(k), tr2.reset(k);
@@ -21,7 +21,7 @@ public:
 	void clear() { tr1.clear(), tr2.clear(); }
 
 private:
-	FenwickTree<T> tr1, tr2;
+	Fenwick<T> tr1, tr2;
 
 	void upd(int k, T x) {
 		tr1.upd(k, x), tr2.upd(k, x * k);
