@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DataStructure/Fenwick.hpp"
+#include "ds/Fenwick.hpp"
 
 template<class T>
 struct FenwickRARS {

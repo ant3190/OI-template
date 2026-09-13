@@ -1,6 +1,6 @@
 #pragma once
 
-#include "String/SuffixArray.hpp"
+#include "string/SuffixArray.hpp"
 
 template<class S>
 std::vector<std::array<int, 3>> get_runs(const S& s) {

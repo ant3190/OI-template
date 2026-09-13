@@ -1,6 +1,6 @@
 #pragma once
 
-#include<Utility/Order.hpp>
+#include<utility/Order.hpp>
 
 struct SuffixArray {
 public:
