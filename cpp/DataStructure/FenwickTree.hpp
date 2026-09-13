@@ -3,19 +3,19 @@
 template<class T>
 struct FenwickTree {
 public:
-	FenwickTree() : _n(0) {}
-	explicit FenwickTree(int n) : _n(n), tr(n + 1 + (n >> 10)) {}
+	FenwickTree() : n(0) {}
+	explicit FenwickTree(int n) : n(n), tr(n + 1 + (n >> 10)) {}
 
 	void upd(int k, T x) {
-		assert(k > 0 && k <= _n);
-		for (int kt = k; kt <= _n; kt += kt & -kt) { tr[kt + (kt >> 10)] += x; }
+		assert(k > 0);
+		for (int kt = k; kt <= n; kt += kt & -kt) { tr[kt + (kt >> 10)] += x; }
 	}
 	void reset(int k) {
-		assert(k > 0 && k <= _n);
-		for (int kt = k; kt <= _n; kt += kt & -kt) { tr[kt + (kt >> 10)] = T(); }
+		assert(k > 0);
+		for (int kt = k; kt <= n; kt += kt & -kt) { tr[kt + (kt >> 10)] = T(); }
 	}
 	T qry(int k) {
-		assert(k >= 0 && k <= _n);
+		assert(k >= 0 && k <= n);
 		T res = T();
 		for (int kt = k; kt; kt &= (kt - 1)) { res += tr[kt + (kt >> 10)]; }
 		return res;
@@ -26,6 +26,6 @@ public:
 	void clear() { std::fill(tr.begin(), tr.end(), T()); }
 	
 private:
-	int _n;
+	int n;
 	std::vector<T> tr;
 };

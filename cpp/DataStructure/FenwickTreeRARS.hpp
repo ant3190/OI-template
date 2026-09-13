@@ -1,39 +1,30 @@
 #pragma once
 
+#include "DataStructure/FenwickTree.hpp"
+
 template<class T>
 struct FenwickTreeRARS {
 public:
-	FenwickTreeRARS() : _n(0) {}
-	explicit FenwickTreeRARS(int n) : _n(n), tr1(n + 1 + (n >> 10)), tr2(n + 1 + (n >> 10)) {}
+	FenwickTreeRARS() : n() {}
+	FenwickTreeRARS(int n) : n(n), tr1(n), tr2(n) {}
 
 	void reset(int k) {
-		assert(k > 0 && k <= _n);
-		for (int kt = k; kt <= _n; kt += kt & -kt) { tr1[kt + (kt >> 10)] = T(); }
-		for (int kt = k; kt <= _n; kt += kt & -kt) { tr2[kt + (kt >> 10)] = T(); }
+		tr1.reset(k), tr2.reset(k);
 	}
 	void upd(int l, int r, T x) {
 		if (l <= r) { upd(l, x), upd(r + 1, -x); }
 	}
 	T qry(int k) {
-		assert(k >= 0 && k <= _n);
-		T r1 = T(), r2 = T();
-		for (int kt = k; kt; kt &= (kt - 1)) { r1 += tr1[kt + (kt >> 10)]; }
-		for (int kt = k; kt; kt &= (kt - 1)) { r2 += tr2[kt + (kt >> 10)]; }
-		return r1 * (k + 1) - r2;
+		return tr1.qry(k) * (k + 1) - tr2.qry(k);
 	}
-	T qry(int l, int r) {
-		return (l > r ? T() : qry(r) - qry(l - 1));
-	}
-	void clear() { std::fill(tr1.begin(), tr1.end(), T()), std::fill(tr2.begin(), tr2.end(), T()); }
+	T qry(int l, int r) { return (l > r ? T() : qry(r) - qry(l - 1)); }
+	void clear() { tr1.clear(), tr2.clear(); }
 
 private:
-	int _n;
-	std::vector<T> tr1, tr2;
+	int n;
+	FenwickTree<T> tr1, tr2;
 
 	void upd(int k, T x) {
-		assert(k > 0 && k <= _n + 1);
-		for (int kt = k; kt <= _n; kt += kt & -kt) { tr1[kt + (kt >> 10)] += x; }
-		x = x * k;
-		for (int kt = k; kt <= _n; kt += kt & -kt) { tr2[kt + (kt >> 10)] += x; }
+		tr1.upd(k, x), tr2.upd(k, x * k);
 	}
 };
