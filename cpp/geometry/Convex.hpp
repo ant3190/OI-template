@@ -1,6 +1,6 @@
 #pragma once
 
-#include "basics/Line.hpp"
+#include "geometry/Line.hpp"
 
 template<class P> std::vector<P> convex_hull(std::vector<P> v) {
 	std::sort(v.begin(), v.end());

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "geometry/Line.hpp"
+#include "geometry/Point.hpp"
 
 // 1/0/-1 : Left/On line/Right
 template<class P> int side_of(P s, P e, P p) { return sgn((e - s) ^ (p - s)); }
