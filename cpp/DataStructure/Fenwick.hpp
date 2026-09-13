@@ -6,12 +6,14 @@ public:
 	Fenwick() = default;
 	Fenwick(int n) : n(n), tr(n + 1 + (n >> 10)) {}
 
+	int size() const { return n; }
+
 	void upd(int k, T x) {
-		assert(k > 0);
+		assert(k > 0 && k <= n + 1);
 		for (int kt = k; kt <= n; kt += kt & -kt) { tr[kt + (kt >> 10)] += x; }
 	}
 	void reset(int k) {
-		assert(k > 0);
+		assert(k > 0 && k <= n);
 		for (int kt = k; kt <= n; kt += kt & -kt) { tr[kt + (kt >> 10)] = T(); }
 	}
 	T qry(int k) {
@@ -26,6 +28,6 @@ public:
 	void clear() { std::fill(tr.begin(), tr.end(), T()); }
 	
 private:
-	int n;
+	int n = -1;
 	std::vector<T> tr;
 };

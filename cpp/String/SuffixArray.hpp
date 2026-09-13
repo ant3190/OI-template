@@ -4,7 +4,6 @@
 
 struct SuffixArray {
 public:
-	int n;
 	std::vector<int> sa, rk, ht;
 
 	SuffixArray() = default;
@@ -55,11 +54,14 @@ public:
 		}
 	}
 
+	int size() const { return n; }
 	int operator[](const int &id) const {
+		assert(id > 0 && id <= n);
 		return sa[id];
 	}
 
 	void init_lcp() {
+		assert(n != -1);
 		int m = 32 - __builtin_clz(n);
 		rmq = std::vector<std::vector<int>>(m, std::vector<int>(n + 1));
 		for (int i = 2; i <= n; ++i) { rmq[0][i] = ht[i]; }
@@ -80,5 +82,6 @@ public:
 	}
 
 private:
+	int n = -1;
 	std::vector<std::vector<int>> rmq;
 };
