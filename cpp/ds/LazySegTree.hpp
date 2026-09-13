@@ -1,13 +1,15 @@
 #pragma once
 
+#include "basics/Assert.hpp"
+
 template <class S, class T> 
 struct LazySegTree {
 public:
 	LazySegTree() = default;
 	LazySegTree(int n) : 
-		n(n), ht(n == 1 ? 0 : 32 - __builtin_clz(n - 1)), m(1 << ht), tr(m << 1), tag(m << 1), vis(m << 1) {}
+		n((ASSERT(n > 0), n)), ht(n == 1 ? 0 : 32 - __builtin_clz(n - 1)), m(1 << ht), tr(m << 1), tag(m << 1), vis(m << 1) {}
 	LazySegTree(int n, S *v) : 
-		n(n), ht(n == 1 ? 0 : 32 - __builtin_clz(n - 1)), m(1 << ht), tr(m << 1), tag(m << 1), vis(m << 1) {
+		n((ASSERT(n > 0), n)), ht(n == 1 ? 0 : 32 - __builtin_clz(n - 1)), m(1 << ht), tr(m << 1), tag(m << 1), vis(m << 1) {
 		for (int i = 1; i <= n; ++i) { tr[i + m - 1] = v[i], vis[i + m - 1] = 1; }
 		for (int i = m - 1; i >= 1; --i) { pushup(i); }
 	}
@@ -15,19 +17,19 @@ public:
 	int size() const { return n; }
 
 	void set(int k, S x) {
-		assert(k > 0 && k <= n);
+		ASSERT(k > 0 && k <= n);
 		down(k);
 		tr[k + m - 1] = x;
 		up(k);
 	}
 	void upd(int k, T x) {
-		assert(k > 0 && k <= n);
+		ASSERT(k > 0 && k <= n);
 		down(k);
 		pushtag(k + m - 1, x);
 		up(k);
 	}
 	void upd(int l, int r, T x) {
-		assert(l > 0 && r <= n);
+		ASSERT(l > 0 && r <= n);
 		if (l > r) { return ; }
 		down(l), down(r);
 		for (int lt = l + m - 1, rt = r + m; lt < rt; lt >>= 1, rt >>= 1) {
@@ -37,11 +39,11 @@ public:
 		up(l), up(r);
 	}
 	S qry() {
-		assert(n != -1);
+		ASSERT(n != -1);
 		return tr[1];
 	}
 	S qry(int k) {
-		assert(k > 0 && k <= n);
+		ASSERT(k > 0 && k <= n);
 		S res = tr[k + m - 1];
 		for (int kt = k + m - 1; kt; kt >>= 1) {
 			if (vis[kt]) { res = res + tag[kt]; }
@@ -49,7 +51,7 @@ public:
 		return res;
 	}
 	S qry(int l, int r) {
-		assert(l > 0 && r <= n);
+		ASSERT(l > 0 && r <= n);
 		if (l > r) { return S(); }
 		S sml = S(), smr = S();
 		int lp = (l + m - 1) >> 1, rp = (r + m - 1) >> 1;
@@ -69,7 +71,7 @@ public:
 	}
 	template<class F>
 	int firstright(int k, F check) {
-		assert(k > 0 && k <= n + 1);
+		ASSERT(k > 0 && k <= n + 1);
 		if (check(S())) { return k - 1; }
 		if (k == n + 1) { return n + 1; }
 		down(k);
@@ -91,7 +93,7 @@ public:
 	}
 	template<class F>
 	int firstleft(int k, F check) {
-		assert(k >= 0 && k <= n);
+		ASSERT(k >= 0 && k <= n);
 		if (check(S())) { return k + 1; }
 		if (k == 0) { return 0; }
 		down(k);
@@ -112,6 +114,7 @@ public:
 		return 0;
 	}
 	void clear() { 
+		ASSERT(n != -1);
 		std::fill(tr.begin(), tr.end(), S());
 		std::fill(tag.begin(), tag.end(), T());
 		std::fill(vis.begin(), vis.end(), 0);

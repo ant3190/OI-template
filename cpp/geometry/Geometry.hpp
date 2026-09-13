@@ -26,7 +26,7 @@ struct Point {
 	T operator^(const P& p) const { return x * p.y - y * p.x; }
 	T operator*(const P& p) const { return x * p.x + y * p.y; }
 	P operator*(T d) const { return P(x * d, y * d); }
-	P operator/(T d) const { return P(x / d, y / d); }
+	P operator/(T d) const { ASSERT(d != 0); return P(x / d, y / d); }
 	friend P operator*(T d, const P& p) { return p * d; }
 
 	T len2() const { return x * x + y * y; }

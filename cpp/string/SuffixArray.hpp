@@ -75,6 +75,8 @@ public:
 
 	int lcp(int i, int j) {
 		ASSERT(!rmq.empty());
+		ASSERT(1 <= i && i <= n);
+		ASSERT(1 <= j && j <= n);
 		if (i == j) { return n - i + 1; }
 		i = rk[i], j = rk[j];
 		if (i > j) { std::swap(i, j); }

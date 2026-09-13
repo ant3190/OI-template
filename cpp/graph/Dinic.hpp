@@ -6,9 +6,11 @@ template<class T>
 struct Dinic {
 public:
 	Dinic() : n() {}
-	Dinic(int n) : n(n), ed(n + 1), dis(n + 1), qu(n + 1), ptr(n + 1) {}
+	Dinic(int n) : n((ASSERT(n >= 0), n)), ed(n + 1), dis(n + 1), qu(n + 1), ptr(n + 1) {}
 
 	std::pair<int, int> add(int from, int to, T cap) {
+		ASSERT(1 <= from && from <= n);
+		ASSERT(1 <= to && to <= n);
 		ASSERT(cap >= 0);
 		int id = (int)ed[from].size(), rev = (int)ed[to].size() + (from == to);
 		ed[from].push_back(edge(to, rev, cap));
@@ -17,7 +19,9 @@ public:
 	}
 
 	T max_flow(int s, int t, T lim = inf) {
-		ASSERT(s != t);
+		ASSERT(1 <= s && s <= n);
+		ASSERT(1 <= t && t <= n);
+		ASSERT(s != t && lim >= 0);
 		T res = 0;
 		while (res < lim && path(s, t)) {
 			res += dfs(s, t, lim - res);
@@ -27,15 +31,21 @@ public:
 
 	std::pair<T, T> get_flow(std::pair<int, int> id) {
 		auto [u, i] = id;
+		ASSERT(1 <= u && u <= n);
+		ASSERT(0 <= i && i < (int)ed[u].size());
 		edge &e = ed[u][i], &r = ed[e.to][e.rev];
 		return {r.cap, e.cap + r.cap};
 	}
 
 	bool left_of_cut(int s) {
+		ASSERT(1 <= s && s <= n);
 		return dis[s] != -1;
 	}
 
-	void reserve(int u, int m) { ed[u].reserve(m); }
+	void reserve(int u, int m) {
+		ASSERT(1 <= u && u <= n && m >= 0);
+		ed[u].reserve(m);
+	}
 
 private:
 	static constexpr T inf = std::numeric_limits<T>::max() / 2;
