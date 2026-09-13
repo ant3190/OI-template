@@ -13,7 +13,7 @@ public:
 		for (int kt = k; kt <= n; kt += kt & -kt) { tr[kt + (kt >> 10)] += x; }
 	}
 	void reset(int k) {
-		assert(k > 0 && k <= n);
+		assert(k > 0);
 		for (int kt = k; kt <= n; kt += kt & -kt) { tr[kt + (kt >> 10)] = T(); }
 	}
 	T qry(int k) {
