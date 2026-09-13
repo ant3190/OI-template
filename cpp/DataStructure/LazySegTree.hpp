@@ -110,16 +110,16 @@ public:
 		return 0;
 	}
 	void clear() { 
-		fill(tr.begin(), tr.end(), S());
-		fill(tag.begin(), tag.end(), T());
-		fill(vis.begin(), vis.end(), 0);
+		std::fill(tr.begin(), tr.end(), S());
+		std::fill(tag.begin(), tag.end(), T());
+		std::fill(vis.begin(), vis.end(), 0);
 	}
 	
 private:
 	int _n, ht, _m;
-	vector<S> tr;
-	vector<T> tag;
-	vector<int> vis;
+	std::vector<S> tr;
+	std::vector<T> tag;
+	std::vector<int> vis;
 	void pushtag(int p, T x) {
 		vis[p] = 1;
 		tr[p] = tr[p] + x, tag[p] = tag[p] + x;

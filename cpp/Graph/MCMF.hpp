@@ -6,7 +6,7 @@ public:
 	MCMF() : n(), dirty() {}
 	MCMF(int n) : n(n), ed(n + 1), par(n + 1), dis(n + 1), pi(n + 1), dirty() {}
 
-	pair<int, int> add(int from, int to, T cap, T cost) {
+	std::pair<int, int> add(int from, int to, T cap, T cost) {
 		assert(cap >= 0);
 		dirty |= (cap && pi[from] != inf && pi[from] + cost < pi[to]);
 		int id = (int)ed[from].size(), rev = (int)ed[to].size() + (from == to);
@@ -15,15 +15,15 @@ public:
 		return {from, id};
 	}
 
-	pair<T, T> max_flow(int s, int t, T lim = inf) {
+	std::pair<T, T> max_flow(int s, int t, T lim = inf) {
 		assert(s != t);
 		setpi(s);
-		pair<T, T> res = {0, 0};
+		std::pair<T, T> res = {0, 0};
 		while (res.first < lim && path(s, t)) {
 			T flw = lim - res.first;
 			for (int i = t, j, r; i != s; i = j) {
 				r = ed[i][par[i]].rev, j = ed[i][par[i]].to;
-				flw = min(flw, ed[j][r].cap);
+				flw = std::min(flw, ed[j][r].cap);
 			}
 			res.first += flw, res.second += flw * (pi[t] - pi[s]);
 			for (int i = t, j, r; i != s; i = j) {
@@ -35,7 +35,7 @@ public:
 		return res;
 	}
 
-	pair<T, T> get_flow(pair<int, int> id) {
+	std::pair<T, T> get_flow(std::pair<int, int> id) {
 		auto [u, i] = id;
 		edge &e = ed[u][i], &r = ed[e.to][e.rev];
 		return {r.cap, e.cap + r.cap};
@@ -44,7 +44,7 @@ public:
 	void reserve(int u, int m) { ed[u].reserve(m); }
 
 private:
-	static constexpr T inf = numeric_limits<T>::max() / 2;
+	static constexpr T inf = std::numeric_limits<T>::max() / 2;
 
 	struct edge {
 		int to, rev;
@@ -56,14 +56,14 @@ private:
 	int n;
 	bool dirty;
 
-	vector<vector<edge>> ed;
-	vector<int> par;
-	vector<T> dis, pi;
+	std::vector<std::vector<edge>> ed;
+	std::vector<int> par;
+	std::vector<T> dis, pi;
 
 	bool path(int s, int t) {
-		fill(dis.begin(), dis.end(), inf);
+		std::fill(dis.begin(), dis.end(), inf);
 		dis[s] = 0;
-		priority_queue<pair<T, int>, vector<pair<T, int>>, greater<pair<T, int>>> qu;
+		std::priority_queue<std::pair<T, int>, std::vector<std::pair<T, int>>, std::greater<std::pair<T, int>>> qu;
 		qu.push({dis[s], s});
 		while (!qu.empty()) {
 			auto [di, u] = qu.top(); qu.pop();
@@ -87,7 +87,7 @@ private:
 		if (!dirty && pi[s] != inf) { return ; }
 		dirty = 0;
 
-		fill(pi.begin(), pi.end(), inf);
+		std::fill(pi.begin(), pi.end(), inf);
 		pi[s] = 0;
 		int t = n, flg = 1;
 		while (flg-- && t--) {

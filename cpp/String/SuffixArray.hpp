@@ -5,7 +5,7 @@
 struct SuffixArray {
 public:
 	int n;
-	vector<int> sa, rk, ht;
+	std::vector<int> sa, rk, ht;
 
 	SuffixArray() = default;
 	template<class S> 
@@ -23,7 +23,7 @@ public:
 			}
 		}
 
-		vector<int> cnt(max(m, n) + 1, 0), aux(n + 1), nrk(n + 1);
+		std::vector<int> cnt(std::max(m, n) + 1, 0), aux(n + 1), nrk(n + 1);
 		for (int i = 1; i <= n; ++i) { ++cnt[rk[i]]; }
 		for (int i = 1; i <= m; ++i) { cnt[i] += cnt[i - 1]; }
 		for (int i = n; i >= 1; --i) { sa[cnt[rk[i]]--] = i; }
@@ -33,7 +33,7 @@ public:
 			for (int i = 1; i <= n; ++i) {
 				if (sa[i] > k) { aux[++p] = sa[i] - k; }
 			}
-			fill(cnt.begin() + 1, cnt.begin() + m + 1, 0);
+			std::fill(cnt.begin() + 1, cnt.begin() + m + 1, 0);
 			for (int i = 1; i <= n; ++i) { ++cnt[rk[i]]; }
 			for (int i = 1; i <= m; ++i) { cnt[i] += cnt[i - 1]; }
 			for (int i = n; i >= 1; --i) { sa[cnt[rk[aux[i]]]--] = aux[i]; }
@@ -43,7 +43,7 @@ public:
 				m += (rk[a] != rk[b] || (a + k <= n ? rk[a + k] : -1) != (b + k <= n ? rk[b + k] : -1));
 				nrk[a] = m;
 			}
-			swap(nrk, rk);
+			std::swap(nrk, rk);
 		}
 
 		for (int i = 1, j, k = 0; i <= n; ++i) {
@@ -61,11 +61,11 @@ public:
 
 	void init_lcp() {
 		int m = 32 - __builtin_clz(n);
-		rmq = vector<vector<int>>(m, vector<int>(n + 1));
+		rmq = std::vector<std::vector<int>>(m, std::vector<int>(n + 1));
 		for (int i = 2; i <= n; ++i) { rmq[0][i] = ht[i]; }
 		for (int i = 1; i < m; ++i) {
 			for (int j = 2; j + (1 << i) - 1 <= n; ++j) {
-				rmq[i][j] = min(rmq[i - 1][j], rmq[i - 1][j + (1 << (i - 1))]);
+				rmq[i][j] = std::min(rmq[i - 1][j], rmq[i - 1][j + (1 << (i - 1))]);
 			}
 		}
 	}
@@ -74,11 +74,11 @@ public:
 		assert(!rmq.empty());
 		if (i == j) { return n - i + 1; }
 		i = rk[i], j = rk[j];
-		if (i > j) { swap(i, j); }
+		if (i > j) { std::swap(i, j); }
 		int t = 31 - __builtin_clz(j - i++);
-		return min(rmq[t][i], rmq[t][j - (1 << t) + 1]);
+		return std::min(rmq[t][i], rmq[t][j - (1 << t) + 1]);
 	}
 
 private:
-	vector<vector<int>> rmq;
+	std::vector<std::vector<int>> rmq;
 };

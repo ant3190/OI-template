@@ -23,9 +23,9 @@ public:
 	T qry(int l, int r) {
 		return (l > r ? T() : qry(r) - qry(l - 1));
 	}
-	void clear() { fill(tr.begin(), tr.end(), T()); }
+	void clear() { std::fill(tr.begin(), tr.end(), T()); }
 	
 private:
 	int _n;
-	vector<T> tr;
+	std::vector<T> tr;
 };

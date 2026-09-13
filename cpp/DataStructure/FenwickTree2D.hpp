@@ -37,9 +37,9 @@ public:
 		if (x1 > x2 || y1 > y2) return T();
 		return qry(x2, y2) - qry(x1 - 1, y2) - qry(x2, y1 - 1) + qry(x1 - 1, y1 - 1);
 	}
-	void clear() { fill(tr.begin(), tr.end(), T()); }
+	void clear() { std::fill(tr.begin(), tr.end(), T()); }
 
 private:
 	int _n, _m;
-	vector<T> tr;
+	std::vector<T> tr;
 };

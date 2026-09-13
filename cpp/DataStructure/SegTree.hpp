@@ -78,11 +78,11 @@ public:
 		} while (kt ^ (kt & -kt));
 		return 0;
 	}
-	void clear() { fill(tr.begin(), tr.end(), S()); }
+	void clear() { std::fill(tr.begin(), tr.end(), S()); }
 	
 private:
 	int _n, ht, _m;
-	vector<S> tr;
+	std::vector<S> tr;
 	void pushup(int p) {
 		tr[p] = tr[p << 1] + tr[p << 1 | 1];
 	}

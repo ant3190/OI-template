@@ -24,11 +24,11 @@ public:
 	T qry(int l, int r) {
 		return (l > r ? T() : qry(r) - qry(l - 1));
 	}
-	void clear() { fill(tr1.begin(), tr1.end(), T()), fill(tr2.begin(), tr2.end(), T()); }
+	void clear() { std::fill(tr1.begin(), tr1.end(), T()), std::fill(tr2.begin(), tr2.end(), T()); }
 
 private:
 	int _n;
-	vector<T> tr1, tr2;
+	std::vector<T> tr1, tr2;
 
 	void upd(int k, T x) {
 		assert(k > 0 && k <= _n + 1);

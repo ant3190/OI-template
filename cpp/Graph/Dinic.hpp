@@ -6,7 +6,7 @@ public:
 	Dinic() : n() {}
 	Dinic(int n) : n(n), ed(n + 1), dis(n + 1), qu(n + 1), ptr(n + 1) {}
 
-	pair<int, int> add(int from, int to, T cap) {
+	std::pair<int, int> add(int from, int to, T cap) {
 		assert(cap >= 0);
 		int id = (int)ed[from].size(), rev = (int)ed[to].size() + (from == to);
 		ed[from].push_back(edge(to, rev, cap));
@@ -23,7 +23,7 @@ public:
 		return res;
 	}
 
-	pair<T, T> get_flow(pair<int, int> id) {
+	std::pair<T, T> get_flow(std::pair<int, int> id) {
 		auto [u, i] = id;
 		edge &e = ed[u][i], &r = ed[e.to][e.rev];
 		return {r.cap, e.cap + r.cap};
@@ -36,7 +36,7 @@ public:
 	void reserve(int u, int m) { ed[u].reserve(m); }
 
 private:
-	static constexpr T inf = numeric_limits<T>::max() / 2;
+	static constexpr T inf = std::numeric_limits<T>::max() / 2;
 
 	struct edge {
 		int to, rev;
@@ -47,12 +47,12 @@ private:
 
 	int n;
 
-	vector<vector<edge>> ed;
-	vector<int> dis, qu, ptr;
+	std::vector<std::vector<edge>> ed;
+	std::vector<int> dis, qu, ptr;
 
 	bool path(int s, int t) {
-		fill(dis.begin(), dis.end(), -1);
-		fill(ptr.begin(), ptr.end(), 0);
+		std::fill(dis.begin(), dis.end(), -1);
+		std::fill(ptr.begin(), ptr.end(), 0);
 		dis[s] = 0;
 		qu[0] = s;
 		int hd = 0, tl = 1;
@@ -74,7 +74,7 @@ private:
 		for (int& i = ptr[u]; i < (int)ed[u].size(); ++i) {
 			edge& e = ed[u][i];
 			if (e.cap && dis[e.to] == dis[u] + 1) {
-				T tmp = dfs(e.to, t, min(flw, e.cap));
+				T tmp = dfs(e.to, t, std::min(flw, e.cap));
 				res += tmp, flw -= tmp;
 				e.cap -= tmp, ed[e.to][e.rev].cap += tmp;
 				if (!flw) { return res; }
