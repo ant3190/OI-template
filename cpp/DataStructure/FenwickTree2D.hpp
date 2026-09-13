@@ -3,10 +3,9 @@
 template<class T>
 struct FenwickTree2D {
 public:
-	FenwickTree2D() : n(0), m(0) {}
-	explicit FenwickTree2D(int n, int m) : 
-		n(n), m(m),  
-		tr((n + 1) * (m + 13), T()) {}
+	FenwickTree2D() = default;
+	FenwickTree2D(int n, int m) : 
+		n(n), m(m), tr((n + 1) * (m + 13), T()) {}
 
 	void upd(int x, int y, T val) {
 		assert(x > 0);

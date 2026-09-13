@@ -3,8 +3,8 @@
 template<class T>
 struct FenwickTree {
 public:
-	FenwickTree() : n(0) {}
-	explicit FenwickTree(int n) : n(n), tr(n + 1 + (n >> 10)) {}
+	FenwickTree() = default;
+	FenwickTree(int n) : n(n), tr(n + 1 + (n >> 10)) {}
 
 	void upd(int k, T x) {
 		assert(k > 0);

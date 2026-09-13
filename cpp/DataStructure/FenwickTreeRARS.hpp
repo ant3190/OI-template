@@ -5,8 +5,8 @@
 template<class T>
 struct FenwickTreeRARS {
 public:
-	FenwickTreeRARS() : n() {}
-	FenwickTreeRARS(int n) : n(n), tr1(n), tr2(n) {}
+	FenwickTreeRARS() = default
+	FenwickTreeRARS(int n) : tr1(n), tr2(n) {}
 
 	void reset(int k) {
 		tr1.reset(k), tr2.reset(k);
@@ -21,7 +21,6 @@ public:
 	void clear() { tr1.clear(), tr2.clear(); }
 
 private:
-	int n;
 	FenwickTree<T> tr1, tr2;
 
 	void upd(int k, T x) {

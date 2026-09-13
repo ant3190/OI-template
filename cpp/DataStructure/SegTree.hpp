@@ -3,7 +3,7 @@
 template <class S> 
 struct SegTree {
 public:
-	SegTree() : n(0) {}
+	SegTree() = default;
 	SegTree(int n) : 
 		n(n), ht((n == 1 ? 0 : 32 - __builtin_clz(n - 1))), m(1 << ht), tr(m << 1) {}
 	SegTree(int n, S *v) : 

@@ -3,13 +3,11 @@
 template <class S, class T> 
 struct LazySegTree {
 public:
-	LazySegTree() : n(0) {}
+	LazySegTree() = default;
 	LazySegTree(int n) : 
-		n(n), ht(n == 1 ? 0 : 32 - __builtin_clz(n - 1)), m(1 << ht), 
-		tr(m << 1), tag(m << 1), vis(m << 1) {}
+		n(n), ht(n == 1 ? 0 : 32 - __builtin_clz(n - 1)), m(1 << ht), tr(m << 1), tag(m << 1), vis(m << 1) {}
 	LazySegTree(int n, S *v) : 
-		n(n), ht(n == 1 ? 0 : 32 - __builtin_clz(n - 1)), m(1 << ht), 
-		tr(m << 1), tag(m << 1), vis(m << 1) {
+		n(n), ht(n == 1 ? 0 : 32 - __builtin_clz(n - 1)), m(1 << ht), tr(m << 1), tag(m << 1), vis(m << 1) {
 		for (int i = 1; i <= n; ++i) { tr[i + m - 1] = v[i], vis[i + m - 1] = 1; }
 		for (int i = m - 1; i >= 1; --i) { pushup(i); }
 	}
@@ -119,6 +117,7 @@ private:
 	std::vector<S> tr;
 	std::vector<T> tag;
 	std::vector<int> vis;
+	
 	void pushtag(int p, T x) {
 		vis[p] = 1;
 		tr[p] = tr[p] + x, tag[p] = tag[p] + x;
