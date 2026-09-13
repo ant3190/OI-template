@@ -1,6 +1,5 @@
 #pragma once
 
-#include "basics/Assert.hpp"
 #include "string/SuffixArray.hpp"
 
 template<class S>

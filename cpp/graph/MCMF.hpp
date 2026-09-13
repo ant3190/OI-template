@@ -9,7 +9,7 @@ public:
 	MCMF(int n) : n(n), dirty(), ed(n + 1), par(n + 1), dis(n + 1), pi(n + 1) {}
 
 	std::pair<int, int> add(int from, int to, T cap, T cost) {
-		assert(cap >= 0);
+		ASSERT(cap >= 0);
 		dirty |= (cap && pi[from] != inf && pi[from] + cost < pi[to]);
 		int id = (int)ed[from].size(), rev = (int)ed[to].size() + (from == to);
 		ed[from].push_back(edge(to, rev, cap, cost));
@@ -18,7 +18,7 @@ public:
 	}
 
 	std::pair<T, T> max_flow(int s, int t, T lim = inf) {
-		assert(s != t);
+		ASSERT(s != t);
 		setpi(s);
 		std::pair<T, T> res = {0, 0};
 		while (res.first < lim && path(s, t)) {
@@ -103,6 +103,6 @@ private:
 				}
 			}
 		}
-		assert(t >= 0);
+		ASSERT(t >= 0);
 	}
 };

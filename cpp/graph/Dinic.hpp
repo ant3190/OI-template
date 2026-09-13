@@ -9,7 +9,7 @@ public:
 	Dinic(int n) : n(n), ed(n + 1), dis(n + 1), qu(n + 1), ptr(n + 1) {}
 
 	std::pair<int, int> add(int from, int to, T cap) {
-		assert(cap >= 0);
+		ASSERT(cap >= 0);
 		int id = (int)ed[from].size(), rev = (int)ed[to].size() + (from == to);
 		ed[from].push_back(edge(to, rev, cap));
 		ed[to].push_back(edge(from, id, 0));
@@ -17,7 +17,7 @@ public:
 	}
 
 	T max_flow(int s, int t, T lim = inf) {
-		assert(s != t);
+		ASSERT(s != t);
 		T res = 0;
 		while (res < lim && path(s, t)) {
 			res += dfs(s, t, lim - res);

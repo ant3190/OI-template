@@ -1,11 +1,8 @@
 #pragma once
 
-#include "basics/Assert.hpp"
-
 template<class S>
 std::vector<std::pair<int, int>> duval(const S& s) {
 	int n = (int)s.size() - 1;
-
 	std::vector<std::pair<int, int>> res;
 	for (int i = 1; i <= n;) {
 		int j = i, k = i + 1;

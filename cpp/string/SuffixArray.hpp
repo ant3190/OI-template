@@ -10,7 +10,7 @@ public:
 	SuffixArray() = default;
 	template<class S> 
 	SuffixArray(const S& s, int m = -1) {
-		assert(s.size() > 1);
+		ASSERT(s.size() > 1);
 		n = (int)s.size() - 1;
 		sa.resize(n + 1), rk.resize(n + 1), ht.resize(n + 1);
 
@@ -19,7 +19,7 @@ public:
 		} else {
 			for (int i = 1; i <= n; ++i) {
 				rk[i] = s[i];
-				assert(1 <= rk[i] && rk[i] <= m);
+				ASSERT(1 <= rk[i] && rk[i] <= m);
 			}
 		}
 
@@ -57,12 +57,12 @@ public:
 
 	int size() const { return n; }
 	int operator[](const int &id) const {
-		assert(id > 0 && id <= n);
+		ASSERT(id > 0 && id <= n);
 		return sa[id];
 	}
 
 	void init_lcp() {
-		assert(n != -1);
+		ASSERT(n != -1);
 		int m = 32 - __builtin_clz(n);
 		rmq = std::vector<std::vector<int>>(m, std::vector<int>(n + 1));
 		for (int i = 2; i <= n; ++i) { rmq[0][i] = ht[i]; }
@@ -74,7 +74,7 @@ public:
 	}
 
 	int lcp(int i, int j) {
-		assert(!rmq.empty());
+		ASSERT(!rmq.empty());
 		if (i == j) { return n - i + 1; }
 		i = rk[i], j = rk[j];
 		if (i > j) { std::swap(i, j); }
