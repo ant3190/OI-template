@@ -5,7 +5,7 @@
 template<class T>
 struct Fenwick {
 public:
-	Fenwick() = default;
+	Fenwick() : n(-1) {};
 	Fenwick(int n) : n((ASSERT(n >= 0), n)), tr(n + 1 + (n >> 10)) {}
 
 	int size() const { return n; }
@@ -31,6 +31,6 @@ public:
 	void clear() { ASSERT(n != -1); std::fill(tr.begin(), tr.end(), T()); }
 	
 private:
-	int n = -1;
+	int n;
 	std::vector<T> tr;
 };

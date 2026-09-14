@@ -7,7 +7,7 @@ struct SuffixArray {
 public:
 	std::vector<int> sa, rk, ht;
 
-	SuffixArray() = default;
+	SuffixArray() : n(-1) {};
 	template<class S> 
 	SuffixArray(const S& s, int m = -1) {
 		ASSERT(s.size() > 1);
@@ -85,6 +85,6 @@ public:
 	}
 
 private:
-	int n = -1;
+	int n;
 	std::vector<std::vector<int>> rmq;
 };

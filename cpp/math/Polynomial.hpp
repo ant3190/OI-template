@@ -1,125 +1,95 @@
 #pragma once
 
-#include "basics/Polynomial.hpp"
+#include "math/ModInt.hpp"
+
+using PolyMint = ModInt<998244353>;
 
 namespace Polynomial {
 using std::vector;
 using ull = unsigned long long;
 
-constexpr int mod = 998244353, G = 3, invG = 332748118, Mn = 23, M = 1 << Mn;
+constexpr int P = 998244353, Mn = 23, M = 1 << Mn;
+constexpr PolyMint G = 3, invG = 332748118;
 
-int pow_w[M], pow_iw[M], inv[M + 1];
-
-template <typename _Tp>
-void addmod(_Tp &x) {
-	if (x >= mod) {
-		x -= mod;
-	}
-}
-
-int qpow(int a, int b) {
-	int res = 1;
-	while (b) {
-		if (b & 1) {
-			res = (ull)res * a % mod;
-		}
-		a = (ull)a * a % mod;
-		b >>= 1;
-	}
-	return res;
-}
-
-int qinv(int a) {
-	return qpow(a, mod - 2);
-}
+PolyMint pow_w[M], pow_iw[M], inv[M + 1];
 
 struct initializer {
 	initializer() {
-		int w = qpow(G, mod >> Mn), iw = qpow(invG, mod >> Mn);
+		PolyMint w = G.pow(P >> Mn), iw = invG.pow(P >> Mn);
 		for (int i = M >> 1; i; i >>= 1) {
-			pow_w[i] = pow_iw[i] = 1;
+			pow_w[i] = pow_iw[i] = PolyMint::raw(1);
 			for (int j = 1; j < i; ++j) {
-				pow_w[i + j] = (ull)pow_w[i + j - 1] * w % mod;
-				pow_iw[i + j] = (ull)pow_iw[i + j - 1] * iw % mod;
+				pow_w[i + j] = pow_w[i + j - 1] * w;
+				pow_iw[i + j] = pow_iw[i + j - 1] * iw;
 			}
-			w = (ull)w * w % mod;
-			iw = (ull)iw * iw % mod;
+			w *= w;
+			iw *= iw;
 		}
 
-		inv[0] = 1;
+		inv[0] = PolyMint::raw(1);
 		for (int i = 0; i < M; ++i) {
-			inv[i + 1] = (ull)inv[i] * (i + 1) % mod;
+			inv[i + 1] = inv[i] * PolyMint::raw(i + 1);
 		}
-		inv[M] = qinv(inv[M]);
+		inv[M] = inv[M].inv();
 		for (int i = M; i; --i) {
-			int tmp = inv[i - 1];
-			inv[i - 1] = (ull)inv[i] * i % mod;
-			inv[i] = (ull)inv[i] * tmp % mod;
+			PolyMint tmp = inv[i - 1];
+			inv[i - 1] = inv[i] * PolyMint::raw(i);
+			inv[i] *= tmp;
 		}
 	}
 } initializer;
 
-void NTT_DIF(vector<int> &a) {
+void NTT_DIF(vector<PolyMint> &a) {
 	ASSERT(a.size() && a.size() <= M);
 	ASSERT((a.size() & (a.size() - 1)) == 0);
 	int len = a.size();
 	for (int i = len >> 1; i; i >>= 1) {
-		int *c = pow_w + i;
+		PolyMint *c = pow_w + i;
 		for (int j = 0; j < len; j += i << 1) {
-			int *p = a.data() + j, *q = p + i;
+			PolyMint *p = a.data() + j, *q = p + i;
 			for (int k = 0; k < i; ++k) {
-				int s = p[k], t = q[k];
-				addmod(p[k] = s + t);
-				q[k] = (ull)(s + mod - t) * c[k] % mod;
+				PolyMint s = p[k], t = q[k];
+				p[k] = s + t;
+				q[k] = (s - t) * c[k];
 			}
 		}
 	}
 }
 
-void NTT_DIT(vector<int> &a) {
+void NTT_DIT(vector<PolyMint> &a) {
 	ASSERT(a.size() && a.size() <= M);
 	ASSERT((a.size() & (a.size() - 1)) == 0);
 	int len = a.size();
 	for (int i = 1; i < len; i <<= 1) {
-		int *c = pow_iw + i;
+		PolyMint *c = pow_iw + i;
 		for (int j = 0; j < len; j += i << 1) {
-			int *p = a.data() + j, *q = p + i;
+			PolyMint *p = a.data() + j, *q = p + i;
 			for (int k = 0; k < i; ++k) {
-				int s = p[k], t = (ull)q[k] * c[k] % mod;
-				addmod(p[k] = s + t);
-				addmod(q[k] = s + mod - t);
+				PolyMint s = p[k], t = q[k] * c[k];
+				p[k] = s + t;
+				q[k] = s - t;
 			}
 		}
 	}
-	for (int &x : a) {
-		x = (ull)x * inv[len] % mod;
+	for (PolyMint &x : a) {
+		x = x * inv[len];
 	}
 }
 
 struct Poly {
-	vector<int> p;
+	vector<PolyMint> p;
 
-	Poly(size_t b = 0) { p = vector<int>(b); }
-	Poly(const vector<int> &p) : p(p) {}
-	Poly(const std::initializer_list<int> &p) : p(p) {}
+	Poly(int b = 0) { p = vector<PolyMint>(b); }
+	Poly(const vector<PolyMint> &p) : p(p) {}
+	Poly(const std::initializer_list<PolyMint> &p) : p(p) {}
 
 	void clear() { p.clear(); }
-	void resize(size_t b, int v = 0) { ASSERT(b && 0 <= v && v < mod); p.resize(b, v); }
-	size_t size() const { return p.size(); }
+	void resize(int b, PolyMint v = 0) { ASSERT(b); p.resize(b, v); }
+	int size() const { return p.size(); }
 	void shrink_to_fit() { p.shrink_to_fit(); }
 
-	int &operator[](size_t b) { ASSERT(b < size()); return p[b]; }
-	const int &operator[](size_t b) const { ASSERT(b < size()); return p[b]; }
-
-	void print(const std::string &sep = " ", const std::string &end = "\n") const {
-		for (int i = 0; i < (int)size(); ++i) {
-			if (i) {
-				std::cout << sep;
-			}
-			std::cout << p[i];
-		}
-		std::cout << end;
-	}
+	PolyMint &operator[](int b) { ASSERT(b < size()); return p[b]; }
+	const PolyMint &operator[](int b) const { ASSERT(b < size()); return p[b]; }
 
 	Poly ogf2egf() const;
 	Poly egf2ogf() const;
@@ -128,13 +98,13 @@ struct Poly {
 
 	Poly square() const;
 	Poly inverse() const;
-	Poly inverse(size_t b) const;
+	Poly inverse(int b) const;
 	Poly log() const;
-	Poly log(size_t b) const;
+	Poly log(int b) const;
 	Poly exp() const;
-	Poly exp(size_t b) const;
-	Poly pow(int k) const;
-	Poly pow(int k, size_t b) const;
+	Poly exp(int b) const;
+	Poly pow(long long k) const;
+	Poly pow(long long k, int b) const;
 };
 
 Poly &operator+=(Poly &a, const Poly &b) {
@@ -143,19 +113,15 @@ Poly &operator+=(Poly &a, const Poly &b) {
 		a.resize(b.size());
 	}
 	for (int i = 0; i < (int)b.size(); ++i) {
-		addmod(a[i] += b[i]);
+		a[i] += b[i];
 	}
 	return a;
 }
 
 Poly &operator-=(Poly &a, const Poly &b) {
 	ASSERT(a.size() && b.size());
-	if (a.size() < b.size()) {
-		a.resize(b.size());
-	}
-	for (int i = 0; i < (int)b.size(); ++i) {
-		addmod(a[i] += mod - b[i]);
-	}
+	if (a.size() < b.size()) { a.resize(b.size()); }
+	for (int i = 0; i < (int)b.size(); ++i) { a[i] -= b[i]; }
 	return a;
 }
 
@@ -165,34 +131,28 @@ Poly &operator*=(Poly &a, Poly b) {
 	a.resize(len), b.resize(len);
 	NTT_DIF(a.p), NTT_DIF(b.p);
 	for (int i = 0; i < len; ++i) {
-		a[i] = (ull)a[i] * b[i] % mod;
+		a[i] = a[i] * b[i];
 	}
 	NTT_DIT(a.p);
 	a.resize(n);
 	return a;
 }
 
-Poly &operator*=(Poly &a, int k) {
-	ASSERT(a.size() && 0 <= k && k < mod);
+Poly &operator*=(Poly &a, PolyMint k) {
+	ASSERT(a.size());
 	for (int i = 0; i < (int)a.size(); ++i) {
-		a[i] = (ull)a[i] * k % mod;
+		a[i] = a[i] * k;
 	}
 	return a;
 }
 
-Poly &operator<<=(Poly &a, size_t b) {
+Poly &operator<<=(Poly &a, int b) {
 	ASSERT(a.size());
 	a.p.insert(a.p.begin(), b, 0);
 	return a;
 }
 
-Poly operator+(Poly a, const Poly &b) { a += b; return a; }
-Poly operator-(Poly a, const Poly &b) { a -= b; return a; }
-Poly operator*(Poly a, const Poly &b) { a *= b; return a; }
-Poly operator*(Poly a, int k) { a *= k; return a; }
-Poly operator<<(Poly a, size_t b) { a <<= b; return a; }
-
-Poly &operator>>=(Poly &a, size_t b) {
+Poly &operator>>=(Poly &a, int b) {
 	ASSERT(a.size());
 	if (b >= a.size()) {
 		a.p.assign(1, 0);
@@ -202,14 +162,20 @@ Poly &operator>>=(Poly &a, size_t b) {
 	return a;
 }
 
-Poly operator>>(Poly a, size_t b) { a >>= b; return a; }
+Poly operator+(Poly a, const Poly &b) { a += b; return a; }
+Poly operator-(Poly a, const Poly &b) { a -= b; return a; }
+Poly operator*(Poly a, const Poly &b) { a *= b; return a; }
+Poly operator*(Poly a, PolyMint k) { a *= k; return a; }
+Poly operator<<(Poly a, int b) { a <<= b; return a; }
+Poly operator>>(Poly a, int b) { a >>= b; return a; }
 
 Poly Poly::ogf2egf() const {
 	ASSERT(size() && size() <= M);
 	Poly a(size());
-	for (int i = 0, f = 1; i < (int)size(); ++i) {
-		a[i] = (ull)p[i] * f % mod;
-		f = (ull)f * inv[i + 1] % mod;
+	PolyMint f = PolyMint::raw(1);
+	for (int i = 0; i < (int)size(); ++i) {
+		a[i] = p[i] * f;
+		f *= inv[i + 1];
 	}
 	return a;
 }
@@ -217,9 +183,10 @@ Poly Poly::ogf2egf() const {
 Poly Poly::egf2ogf() const {
 	ASSERT(size() && size() <= M);
 	Poly a(size());
-	for (int i = 0, f = 1; i < (int)size(); ++i) {
-		a[i] = (ull)p[i] * f % mod;
-		f = (ull)f * (i + 1) % mod;
+	PolyMint f = PolyMint::raw(1);
+	for (int i = 0; i < (int)size(); ++i) {
+		a[i] = p[i] * f;
+		f = f * PolyMint::raw(i + 1);
 	}
 	return a;
 }
@@ -231,7 +198,7 @@ Poly Poly::derivative() const {
 	}
 	Poly a(size() - 1);
 	for (int i = 1; i < (int)size(); ++i) {
-		a[i - 1] = (ull)p[i] * i % mod;
+		a[i - 1] = p[i] * PolyMint::raw(i);
 	}
 	return a;
 }
@@ -240,7 +207,7 @@ Poly Poly::integral() const {
 	ASSERT(size() && size() <= M);
 	Poly a(size() + 1);
 	for (int i = 0; i < (int)size(); ++i) {
-		a[i + 1] = (ull)p[i] * inv[i + 1] % mod;
+		a[i + 1] = p[i] * inv[i + 1];
 	}
 	return a;
 }
@@ -248,11 +215,11 @@ Poly Poly::integral() const {
 Poly Poly::square() const {
 	ASSERT(size());
 	int n = (size() << 1) - 1, len = 1 << (31 ^ __builtin_clz((n << 1) - 1));
-	vector<int> a = p;
+	vector<PolyMint> a = p;
 	a.resize(len);
 	NTT_DIF(a);
 	for (int i = 0; i < len; ++i) {
-		a[i] = (ull)a[i] * a[i] % mod;
+		a[i] *= a[i];
 	}
 	NTT_DIT(a);
 	a.resize(n);
@@ -261,7 +228,7 @@ Poly Poly::square() const {
 
 Poly Poly::inverse() const {
 	ASSERT(size() && p[0]);
-	Poly a({qinv(p[0])});
+	Poly a({p[0].inv()});
 	for (int m = 1; m < (int)size(); m <<= 1) {
 		int n = std::min(m << 1, (int)size()), len = m << 1;
 		Poly b = a, c(len);
@@ -272,7 +239,7 @@ Poly Poly::inverse() const {
 		NTT_DIF(b.p);
 		NTT_DIF(c.p);
 		for (int i = 0; i < len; ++i) {
-			c[i] = (ull)c[i] * b[i] % mod;
+			c[i] *= b[i];
 		}
 		NTT_DIT(c.p);
 		for (int i = 0; i < m; ++i) {
@@ -280,17 +247,17 @@ Poly Poly::inverse() const {
 		}
 		NTT_DIF(c.p);
 		for (int i = 0; i < len; ++i) {
-			c[i] = (ull)c[i] * b[i] % mod;
+			c[i] *= b[i];
 		}
 		NTT_DIT(c.p);
 		a.resize(n);
 		for (int i = m; i < n; ++i) {
-			a[i] = c[i] ? mod - c[i] : 0;
+			a[i] = -c[i];
 		}
 	}
 	return a;
 }
-Poly Poly::inverse(size_t b) const {
+Poly Poly::inverse(int b) const {
 	ASSERT(size());
 	Poly a = p;
 	a.resize(b);
@@ -298,14 +265,14 @@ Poly Poly::inverse(size_t b) const {
 }
 
 Poly Poly::log() const {
-	ASSERT(size() && p[0] == 1);
+	ASSERT(size() && p[0] == PolyMint::raw(1));
 	if (size() == 1) return {0};
 	Poly a = derivative() * inverse();
 	a.resize(size() - 1);
 	return a.integral();
 }
 
-Poly Poly::log(size_t b) const {
+Poly Poly::log(int b) const {
 	ASSERT(size());
 	Poly a = p;
 	a.resize(b);
@@ -313,7 +280,7 @@ Poly Poly::log(size_t b) const {
 }
 
 Poly Poly::exp() const {
-	ASSERT(size() && p[0] == 0);
+	ASSERT(size() && p[0] == PolyMint::raw(0));
 	int n = size();
 	if (n == 1) {
 		return {1};
@@ -325,11 +292,11 @@ Poly Poly::exp() const {
 		NTT_DIF(y.p);
 		z1 = z2;
 		Poly z(m);
-		for (int i = 0; i < m; ++i) { z[i] = (ull)y[i] * z1[i] % mod; }
+		for (int i = 0; i < m; ++i) { z[i] = y[i] * z1[i]; }
 		NTT_DIT(z.p);
 		for (int i = 0; i < (m >> 1); ++i) { z[i] = 0; }
 		NTT_DIF(z.p);
-		for (int i = 0; i < m; ++i) { z[i] = (ull)z[i] * (z1[i] ? mod - z1[i] : 0) % mod; }
+		for (int i = 0; i < m; ++i) { z[i] = z[i] * -z1[i]; }
 		NTT_DIT(z.p);
 		int oldc = c.size();
 		c.resize(m);
@@ -342,24 +309,23 @@ Poly Poly::exp() const {
 		x = x.derivative();
 		x.resize(m);
 		NTT_DIF(x.p);
-		for (int i = 0; i < m; ++i) { x[i] = (ull)x[i] * y[i] % mod; }
+		for (int i = 0; i < m; ++i) { x[i] *= y[i]; }
 		NTT_DIT(x.p);
 		Poly db = b.derivative();
 		for (int i = 0; i < m - 1; ++i) {
 			x[i] -= db[i];
-			if (x[i] < 0) { x[i] += mod; }
 		}
 		x.resize(m << 1);
 		for (int i = 0; i < m - 1; ++i) { x[m + i] = x[i], x[i] = 0; }
 		NTT_DIF(x.p);
-		for (int i = 0; i < (m << 1); ++i) { x[i] = (ull)x[i] * z2[i] % mod; }
+		for (int i = 0; i < (m << 1); ++i) { x[i] *= z2[i]; }
 		NTT_DIT(x.p);
 		x.resize((m << 1) - 1);
 		x = x.integral();
-		for (int i = m; i < std::min(n, m << 1); ++i) { addmod(x[i] += p[i]); }
+		for (int i = m; i < std::min(n, m << 1); ++i) { x[i] += p[i]; }
 		for (int i = 0; i < m; ++i) { x[i] = 0; }
 		NTT_DIF(x.p);
-		for (int i = 0; i < (m << 1); ++i) { x[i] = (ull)x[i] * y[i] % mod; }
+		for (int i = 0; i < (m << 1); ++i) { x[i] *= y[i]; }
 		NTT_DIT(x.p);
 		int oldb = b.size();
 		b.resize(std::min(n, m << 1));
@@ -369,14 +335,14 @@ Poly Poly::exp() const {
 	return b;
 }
 
-Poly Poly::exp(size_t b) const {
+Poly Poly::exp(int b) const {
 	ASSERT(size());
 	Poly a = p;
 	a.resize(b);
 	return a.exp();
 }
 
-Poly Poly::pow(int k) const {
+Poly Poly::pow(long long k) const {
 	ASSERT(size() && k >= 0);
 	int n = size(), t = 0;
 	if (!k) {
@@ -385,16 +351,17 @@ Poly Poly::pow(int k) const {
 		return a;
 	}
 	while (t < n && !p[t]) { ++t; }
-	if (t == n || (ull)t * k >= n) { return Poly(n); }
-	int c = p[t], ic = qinv(c), m = n - (ull)t * k;
+	if (t == n || (t && k > (n - 1) / t)) { return Poly(n); }
+	PolyMint c = p[t], ic = c.inv();
+	int m = n - t * k;
 	Poly a(m);
-	for (int i = 0; i < m; ++i) { a[i] = (ull)p[i + t] * ic % mod; }
-	a = (a.log() * (k % mod)).exp() * qpow(c, k);
-	a <<= (ull)t * k;
+	for (int i = 0; i < m; ++i) { a[i] = p[i + t] * ic; }
+	a = (a.log() * PolyMint(k)).exp() * c.pow(k);
+	a <<= t * k;
 	return a;
 }
 
-Poly Poly::pow(int k, size_t b) const {
+Poly Poly::pow(long long k, int b) const {
 	ASSERT(size());
 	Poly a = p;
 	a.resize(b);

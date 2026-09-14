@@ -61,3 +61,5 @@ namespace FastIO {
 		std::putchar(c);
 	}
 }
+
+using namespace FastIO;

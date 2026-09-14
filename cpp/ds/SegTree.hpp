@@ -5,7 +5,7 @@
 template <class S> 
 struct SegTree {
 public:
-	SegTree() = default;
+	SegTree() : n(-1) {};
 	SegTree(int n) : 
 		n((ASSERT(n > 0), n)), ht((n == 1 ? 0 : 32 - __builtin_clz(n - 1))), m(1 << ht), tr(m << 1) {}
 	SegTree(int n, S *v) : 
@@ -87,7 +87,7 @@ public:
 	void clear() { ASSERT(n != -1); std::fill(tr.begin(), tr.end(), S()); }
 	
 private:
-	int n = -1, ht, m;
+	int n, ht, m;
 	std::vector<S> tr;
 	void pushup(int p) {
 		tr[p] = tr[p << 1] + tr[p << 1 | 1];

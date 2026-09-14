@@ -5,7 +5,7 @@
 template<class T>
 struct Fenwick2D {
 public:
-	Fenwick2D() = default;
+	Fenwick2D() : n(-1), m(-1) {};
 	Fenwick2D(int n, int m) : 
 		n((ASSERT(n >= 0 && m >= 0), n)), m(m), tr((n + 1) * (m + 13), T()) {}
 
@@ -44,6 +44,6 @@ public:
 	void clear() { ASSERT(n != -1 && m != -1); std::fill(tr.begin(), tr.end(), T()); }
 
 private:
-	int n = -1, m = -1;
+	int n, m;
 	std::vector<T> tr;
 };

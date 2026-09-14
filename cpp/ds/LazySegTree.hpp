@@ -5,7 +5,7 @@
 template <class S, class T> 
 struct LazySegTree {
 public:
-	LazySegTree() = default;
+	LazySegTree() : n(-1) {};
 	LazySegTree(int n) : 
 		n((ASSERT(n > 0), n)), ht(n == 1 ? 0 : 32 - __builtin_clz(n - 1)), m(1 << ht), tr(m << 1), tag(m << 1), vis(m << 1) {}
 	LazySegTree(int n, S *v) : 
@@ -121,7 +121,7 @@ public:
 	}
 	
 private:
-	int n = -1, ht, m;
+	int n, ht, m;
 	std::vector<S> tr;
 	std::vector<T> tag;
 	std::vector<int> vis;

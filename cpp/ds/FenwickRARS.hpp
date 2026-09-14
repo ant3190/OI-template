@@ -5,7 +5,7 @@
 template<class T>
 struct FenwickRARS {
 public:
-	FenwickRARS() = default;
+	FenwickRARS() {};
 	FenwickRARS(int n) : tr1(n), tr2(n) {}
 
 	int size() const { return tr1.size(); }
