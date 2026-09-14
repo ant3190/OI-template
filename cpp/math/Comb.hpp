@@ -17,12 +17,14 @@ struct Comb {
 		for (int i = n; i > 0; --i) { ifac[i - 1] = ifac[i] * mint::raw(i); }
 	}
 	mint operator()(int n, int m) const {
+		if (m < 0 || m > n) { return mint(0); }
 		ASSERT(n < (int)fac.size());
-		return (m < 0 || m > n ? mint(0) : fac[n] * ifac[m] * ifac[n - m]);
+		return fac[n] * ifac[m] * ifac[n - m];
 	}
 	mint P(int n, int m) const {
+		if (m < 0 || m > n) { return mint(0); }
 		ASSERT(n < (int)fac.size());
-		return (m < 0 || m > n ? mint(0) : fac[n] * ifac[n - m]);
+		return fac[n] * ifac[n - m];
 	}
 
 private:
