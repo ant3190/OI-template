@@ -3,6 +3,7 @@
 #include "math/Polynomial.hpp"
 
 PolyMint bostan_mori(Poly p, Poly q, long long n) {
+	ASSERT(n >= 0 && p.size() && q.size() && q[0]);
 	while (n) {
 		Poly s = q;
 		for (int i = 1; i < s.size(); i += 2) { s[i] = -s[i]; }

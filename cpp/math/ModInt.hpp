@@ -38,6 +38,7 @@ struct ModInt {
 		return *this;
 	}
 	constexpr mint pow(long long n) const {
+		ASSERT(n >= 0);
 		mint a = *this, r = 1;
 		while (n) {
 			if (n & 1) r *= a;
