@@ -69,9 +69,10 @@ public:
 		ASSERT(k >= 0 && k <= n);
 		if (check(S())) { return k + 1; }
 		if (k == 0) { return 0; }
-		int kt = k + m - 1;
+		int kt = k + m;
 		S cur = S();
 		do {
+			--kt;
 			while (kt > 1 && kt & 1) { kt >>= 1; }
 			if (check(tr[kt] + cur)) {
 				while (kt < m) {
@@ -80,7 +81,6 @@ public:
 				return kt - m + 1;
 			}
 			cur = tr[kt] + cur;
-			--kt;
 		} while (kt ^ (kt & -kt));
 		return 0;
 	}
