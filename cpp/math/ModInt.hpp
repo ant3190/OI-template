@@ -22,6 +22,8 @@ struct ModInt {
 	}
 	explicit constexpr operator int() const { return x; }
 	explicit constexpr operator bool() const { return x != 0; }
+	
+	static constexpr int mod() { return P; }
 
 	constexpr mint &operator+=(const mint &b) {
 		x += b.x;

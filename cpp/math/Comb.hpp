@@ -9,7 +9,7 @@ struct Comb {
 	Comb(int n) { init(n); }
 
 	void init(int n) {
-		ASSERT(n >= 0);
+		ASSERT(n >= 0 && n < mint::mod());
 		fac.resize(n + 1), ifac.resize(n + 1);
 		fac[0] = 1;
 		for (int i = 0; i < n; ++i) { fac[i + 1] = fac[i] * mint::raw(i + 1); }
