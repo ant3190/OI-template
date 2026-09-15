@@ -3,7 +3,7 @@
 #include "basics/Assert.hpp"
 #include "math/ModInt.hpp"
 
-template<class mint>
+template <class mint>
 struct Comb {
 	Comb() {}
 	Comb(int n) { init(n); }

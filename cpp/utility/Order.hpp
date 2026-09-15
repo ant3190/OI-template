@@ -1,6 +1,6 @@
 #pragma once
 
-template<class It, class Ot>
+template <class It, class Ot>
 auto rank_compress(It s, It e, Ot p) {
 	using T = typename std::iterator_traits<It>::value_type;
 	std::vector<T> v(s, e), a = v;
@@ -10,7 +10,7 @@ auto rank_compress(It s, It e, Ot p) {
 	return v;
 }
 
-template<class It>
+template <class It>
 auto rank_compress(It s, It e) {
 	return rank_compress(s, e, s);
 }

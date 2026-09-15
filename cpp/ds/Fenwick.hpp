@@ -2,7 +2,7 @@
 
 #include "basics/Assert.hpp"
 
-template<class T>
+template <class T>
 struct Fenwick {
 public:
 	Fenwick() : n(-1) {};

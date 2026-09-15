@@ -1,6 +1,6 @@
 #pragma once
 
-template<class S>
+template <class S>
 std::vector<std::pair<int, int>> duval(const S& s) {
 	int n = (int)s.size() - 1;
 	std::vector<std::pair<int, int>> res;

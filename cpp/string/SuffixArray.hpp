@@ -2,13 +2,15 @@
 
 #include "basics/Assert.hpp"
 #include "utility/Order.hpp"
+#include "ds/RMQ.hpp"
 
+template <class Q = RMQ<int>>
 struct SuffixArray {
 public:
 	std::vector<int> sa, rk, ht;
 
-	SuffixArray() : n(-1) {};
-	template<class S> 
+	SuffixArray() : n(-1) {}
+	template <class S> 
 	SuffixArray(const S& s, int m = -1) {
 		ASSERT(s.size() > 1);
 		n = (int)s.size() - 1;
@@ -56,35 +58,23 @@ public:
 	}
 
 	int size() const { return n; }
-	int operator[](const int &id) const {
+	int operator[](int id) const {
 		ASSERT(id > 0 && id <= n);
 		return sa[id];
 	}
 
-	void init_lcp() {
-		ASSERT(n != -1);
-		int m = 32 - __builtin_clz(n);
-		rmq = std::vector<std::vector<int>>(m, std::vector<int>(n + 1));
-		for (int i = 2; i <= n; ++i) { rmq[0][i] = ht[i]; }
-		for (int i = 1; i < m; ++i) {
-			for (int j = 2; j + (1 << i) - 1 <= n; ++j) {
-				rmq[i][j] = std::min(rmq[i - 1][j], rmq[i - 1][j + (1 << (i - 1))]);
-			}
-		}
-	}
+	void init_lcp() { ASSERT(n != -1); rmq = Q(ht); }
 
-	int lcp(int i, int j) {
-		ASSERT(!rmq.empty());
+	int lcp(int i, int j) const {
 		ASSERT(1 <= i && i <= n);
 		ASSERT(1 <= j && j <= n);
 		if (i == j) { return n - i + 1; }
 		i = rk[i], j = rk[j];
 		if (i > j) { std::swap(i, j); }
-		int t = 31 - __builtin_clz(j - i++);
-		return std::min(rmq[t][i], rmq[t][j - (1 << t) + 1]);
+		return rmq.query(i + 1, j);
 	}
 
 private:
 	int n;
-	std::vector<std::vector<int>> rmq;
+	Q rmq;
 };

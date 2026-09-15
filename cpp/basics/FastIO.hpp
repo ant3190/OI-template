@@ -3,8 +3,8 @@
 namespace FastIO {
 	static char buf[100000], *p1 = buf, *p2 = buf;
 	#define gc (p1 == p2 && (p2 = (p1 = buf) + std::fread(buf, 1, 100000, stdin), p1 == p2) ? EOF : *p1++)
-	inline ll read() { 
-		ll res = 0;
+	inline long long read() { 
+		long long res = 0;
 		int w = 0, c = gc; 
 		for (; !std::isdigit(c); c = gc) {
 			((c == '-') && (w = 1));
@@ -49,7 +49,7 @@ namespace FastIO {
 		}
 		return (w ? -res : res);
 	}
-	inline void write(ll x, char c = '\n') {
+	inline void write(long long x, char c = '\n') {
 		((x < 0) && (std::putchar('-'), x *= -1));
 		static int sta[50], top = 0; 
 		do {

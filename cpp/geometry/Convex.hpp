@@ -2,7 +2,7 @@
 
 #include "geometry/Line.hpp"
 
-template<class P> std::vector<P> convex_hull(std::vector<P> v) {
+template <class P> std::vector<P> convex_hull(std::vector<P> v) {
 	std::sort(v.begin(), v.end());
 	v.erase(std::unique(v.begin(), v.end()), v.end());
 	int n = v.size();
@@ -25,7 +25,7 @@ template<class P> std::vector<P> convex_hull(std::vector<P> v) {
 	return h;
 } 
 
-template<class P> bool in_convex(const std::vector<P>& v, P p, bool incl = 1) {
+template <class P> bool in_convex(const std::vector<P>& v, P p, bool incl = 1) {
 	int n = v.size();
 	if (n == 0) { return 0; }
 	if (n == 1) { return incl && p == v[0]; }
@@ -49,7 +49,7 @@ template<class P> bool in_convex(const std::vector<P>& v, P p, bool incl = 1) {
 	return side_of(v[l], v[r], p) >= (int)!incl;
 }
 
-template<class P> int tangent_point(const std::vector<P> &v, P d) {
+template <class P> int tangent_point(const std::vector<P> &v, P d) {
 	ASSERT(!v.empty() && d != P());
 	int n = v.size(), l = 0, r = n - 1;
 	if (n == 1) { return 0; }

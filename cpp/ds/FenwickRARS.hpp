@@ -2,7 +2,7 @@
 
 #include "ds/Fenwick.hpp"
 
-template<class T>
+template <class T>
 struct FenwickRARS {
 public:
 	FenwickRARS() {};

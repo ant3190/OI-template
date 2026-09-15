@@ -2,7 +2,7 @@
 
 #include "string/SuffixArray.hpp"
 
-template<class S>
+template <class S>
 std::vector<std::array<int, 3>> get_runs(const S& s) {
 	int n = (int)s.size() - 1;
 	if (n <= 1) { return {}; }

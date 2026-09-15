@@ -2,12 +2,12 @@
 
 #include "basics/Assert.hpp"
 
-template<class T> constexpr T eps_v = static_cast<T>(1e-9L);
+template <class T> constexpr T eps_v = static_cast<T>(1e-9L);
 
-template<class T>
+template <class T>
 int sgn(T x) { return (x > eps_v<T>) - (x < -eps_v<T>); }
 
-template<class T> 
+template <class T> 
 struct Point {
 	using P = Point;
 
@@ -33,10 +33,10 @@ struct Point {
 	double angle() const { return std::atan2((double)y, (double)x); }
 };
 
-template<class T> T dist2(Point<T> a, Point<T> b) { return (b - a).len2(); }
-template<class P> double dist(P a, P b) { return (b - a).len(); }
+template <class T> T dist2(Point<T> a, Point<T> b) { return (b - a).len2(); }
+template <class P> double dist(P a, P b) { return (b - a).len(); }
 
-template<class P> void polar_sort(std::vector<P> &v, P o = P()) {
+template <class P> void polar_sort(std::vector<P> &v, P o = P()) {
 	auto half = [](const P& p) {
 		return p.y < 0 || (p.y == 0 && p.x < 0);
 	};

@@ -44,7 +44,7 @@ public:
 		}
 		return sml + smr;
 	}
-	template<class F>
+	template <class F>
 	int firstright(int k, F check) {
 		ASSERT(k > 0 && k <= n + 1);
 		if (check(S())) { return k - 1; }
@@ -64,7 +64,7 @@ public:
 		} while (kt ^ (kt & -kt));
 		return n + 1;
 	}
-	template<class F>
+	template <class F>
 	int firstleft(int k, F check) {
 		ASSERT(k >= 0 && k <= n);
 		if (check(S())) { return k + 1; }

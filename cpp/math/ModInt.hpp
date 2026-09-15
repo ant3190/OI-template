@@ -3,7 +3,6 @@
 #include "basics/Assert.hpp"
 
 namespace modint_internal {
-
 constexpr long long pow_mod(long long x, long long n, int m) {
 	if (m == 1) { return 0; }
 	unsigned long long r = 1, y = (x % m + m) % m;
@@ -14,7 +13,6 @@ constexpr long long pow_mod(long long x, long long n, int m) {
 	}
 	return r;
 }
-
 constexpr bool is_prime(int n) {
 	if (n <= 1) { return false; }
 	if (n == 2 || n == 7 || n == 61) { return true; }
@@ -32,7 +30,6 @@ constexpr bool is_prime(int n) {
 	}
 	return true;
 }
-
 constexpr std::pair<long long, long long> inv_gcd(long long a, long long b) {
 	a %= b;
 	if (a < 0) { a += b; }
@@ -46,10 +43,9 @@ constexpr std::pair<long long, long long> inv_gcd(long long a, long long b) {
 	if (m0 < 0) { m0 += b / s; }
 	return {s, m0};
 }
-
 }
 
-template<int P>
+template <int P>
 struct ModInt {
 	using mint = ModInt;
 	using ull = unsigned long long;
