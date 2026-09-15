@@ -11,7 +11,7 @@ public:
 
 	std::pair<int, int> size() const { return {n, m}; }
 
-	void upd(int x, int y, T val) {
+	void update(int x, int y, T val) {
 		ASSERT(n != -1 && x > 0);
 		ASSERT(m != -1 && y > 0);
 		for (int i = x; i <= n; i += i & -i) {
@@ -27,7 +27,7 @@ public:
 			for (int j = y, s = i * (m + 13); j <= m; j += j & -j) { tr[s + j] = T(); }
 		}
 	}
-	T qry(int x, int y) {
+	T query(int x, int y) {
 		ASSERT(x >= 0 && x <= n);
 		ASSERT(y >= 0 && y <= m);
 		T res = T();
@@ -36,10 +36,10 @@ public:
 		}
 		return res;
 	}
-	T qry(int x1, int y1, int x2, int y2) {
+	T query(int x1, int y1, int x2, int y2) {
 		ASSERT(n != -1 && m != -1);
 		if (x1 > x2 || y1 > y2) return T();
-		return qry(x2, y2) - qry(x1 - 1, y2) - qry(x2, y1 - 1) + qry(x1 - 1, y1 - 1);
+		return query(x2, y2) - query(x1 - 1, y2) - query(x2, y1 - 1) + query(x1 - 1, y1 - 1);
 	}
 	void clear() { ASSERT(n != -1 && m != -1); std::fill(tr.begin(), tr.end(), T()); }
 

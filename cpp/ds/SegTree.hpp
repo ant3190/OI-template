@@ -21,20 +21,20 @@ public:
 		tr[k + m - 1] = x;
 		up(k);
 	}
-	void upd(int k, S x) {
+	void update(int k, S x) {
 		ASSERT(k > 0 && k <= n);
 		tr[k + m - 1] = tr[k + m - 1] + x;
 		up(k);
 	}
-	S qry() {
+	S query() {
 		ASSERT(n != -1);
 		return tr[1];
 	}
-	S qry(int k) {
+	S query(int k) {
 		ASSERT(k > 0 && k <= n);
 		return tr[k + m - 1];
 	}
-	S qry(int l, int r) {
+	S query(int l, int r) {
 		ASSERT(l > 0 && r <= n);
 		if (l > r) { return S(); }
 		S sml = S(), smr = S();

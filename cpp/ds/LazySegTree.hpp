@@ -22,13 +22,13 @@ public:
 		tr[k + m - 1] = x;
 		up(k);
 	}
-	void upd(int k, T x) {
+	void update(int k, T x) {
 		ASSERT(k > 0 && k <= n);
 		down(k);
 		pushtag(k + m - 1, x);
 		up(k);
 	}
-	void upd(int l, int r, T x) {
+	void update(int l, int r, T x) {
 		ASSERT(l > 0 && r <= n);
 		if (l > r) { return ; }
 		down(l), down(r);
@@ -38,11 +38,11 @@ public:
 		}
 		up(l), up(r);
 	}
-	S qry() {
+	S query() {
 		ASSERT(n != -1);
 		return tr[1];
 	}
-	S qry(int k) {
+	S query(int k) {
 		ASSERT(k > 0 && k <= n);
 		S res = tr[k + m - 1];
 		for (int kt = (k + m - 1) >> 1; kt; kt >>= 1) {
@@ -50,7 +50,7 @@ public:
 		}
 		return res;
 	}
-	S qry(int l, int r) {
+	S query(int l, int r) {
 		ASSERT(l > 0 && r <= n);
 		if (l > r) { return S(); }
 		S sml = S(), smr = S();

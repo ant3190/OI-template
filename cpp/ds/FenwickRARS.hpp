@@ -13,23 +13,23 @@ public:
 	void reset(int k) {
 		tr1.reset(k), tr2.reset(k);
 	}
-	void upd(int l, int r, T x) {
+	void update(int l, int r, T x) {
 		ASSERT(size() != -1);
-		if (l <= r) { upd(l, x), upd(r + 1, -x); }
+		if (l <= r) { update(l, x), update(r + 1, -x); }
 	}
-	T qry(int k) {
-		return tr1.qry(k) * (k + 1) - tr2.qry(k);
+	T query(int k) {
+		return tr1.query(k) * (k + 1) - tr2.query(k);
 	}
-	T qry(int l, int r) {
+	T query(int l, int r) {
 		ASSERT(size() != -1);
-		return (l > r ? T() : qry(r) - qry(l - 1));
+		return (l > r ? T() : query(r) - query(l - 1));
 	}
 	void clear() { ASSERT(size() != -1); tr1.clear(), tr2.clear(); }
 
 private:
 	Fenwick<T> tr1, tr2;
 
-	void upd(int k, T x) {
-		tr1.upd(k, x), tr2.upd(k, x * k);
+	void update(int k, T x) {
+		tr1.update(k, x), tr2.update(k, x * k);
 	}
 };
