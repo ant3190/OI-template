@@ -1,6 +1,6 @@
 #pragma once
 
-#include "math/Polynomial.hpp"
+#include "math/Poly.hpp"
 
 PolyMint bostan_mori(Poly p, Poly q, long long n) {
 	ASSERT(n >= 0 && p.size() && q.size() && q[0]);
