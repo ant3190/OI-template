@@ -214,30 +214,6 @@ template <int MOD>
 Poly<MOD> operator>>(Poly<MOD> a, int b) { a >>= b; return a; }
 
 template <int MOD>
-Poly<MOD> Poly<MOD>::ogf2egf() const {
-	ASSERT(size() && size() <= M);
-	Poly a(size());
-	mint f = 1;
-	for (int i = 0; i < (int)size(); ++i) {
-		a[i] = p[i] * f;
-		f *= Info::inv[i + 1];
-	}
-	return a;
-}
-
-template <int MOD>
-Poly<MOD> Poly<MOD>::egf2ogf() const {
-	ASSERT(size() && size() <= M);
-	Poly a(size());
-	mint f = 1;
-	for (int i = 0; i < (int)size(); ++i) {
-		a[i] = p[i] * f;
-		f *= mint::raw(i + 1);
-	}
-	return a;
-}
-
-template <int MOD>
 Poly<MOD> Poly<MOD>::derivative() const {
 	ASSERT(size());
 	if (size() == 1) {
