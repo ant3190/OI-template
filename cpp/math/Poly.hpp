@@ -12,7 +12,6 @@ struct NTTInfo {
 
 	static constexpr int P = MOD, MaxMn = 23;
 	static constexpr int Mn = std::min(MaxMn, (int)std::countr_zero((unsigned)(P - 1))), M = 1 << Mn;
-
 	static consteval mint ntt_root() {
 		for (mint g = 2;; ++g) {
 			if (g.pow((P - 1) >> 1) == P - 1) {
@@ -20,56 +19,102 @@ struct NTTInfo {
 			}
 		}
 	}
-
 	static constexpr mint W = ntt_root(), invW = W.inv();
 
-	static inline mint pow_w[M], pow_iw[M], inv[M + 1];
+	struct RootInfo {
+		mint root[Mn + 1], iroot[Mn + 1];
+		mint rate2[Mn + 1], irate2[Mn + 1];
+		mint rate3[Mn + 1], irate3[Mn + 1];
+		mint inv2[Mn + 1];
 
-	struct initializer {
-		initializer() {
-			mint w = W, iw = invW;
-			for (int i = M >> 1; i; i >>= 1) {
-				pow_w[i] = pow_iw[i] = 1;
-				for (int j = 1; j < i; ++j) {
-					pow_w[i + j] = pow_w[i + j - 1] * w;
-					pow_iw[i + j] = pow_iw[i + j - 1] * iw;
-				}
-				w *= w;
-				iw *= iw;
+		consteval RootInfo() {
+			root[Mn] = W, iroot[Mn] = invW;
+			for (int i = Mn; i; --i) {
+				root[i - 1] = root[i] * root[i];
+				iroot[i - 1] = iroot[i] * iroot[i];
 			}
-			inv[0] = 1;
-			for (int i = 0; i < M; ++i) {
-				inv[i + 1] = inv[i] * mint::raw(i + 1);
+			mint prod = 1, iprod = 1;
+			for (int i = 0; i <= Mn - 2; ++i) {
+				rate2[i] = root[i + 2] * prod;
+				irate2[i] = iroot[i + 2] * iprod;
+				prod *= iroot[i + 2];
+				iprod *= root[i + 2];
 			}
-			inv[M] = inv[M].inv();
-			for (int i = M; i; --i) {
-				mint tmp = inv[i - 1];
-				inv[i - 1] = inv[i] * mint::raw(i);
-				inv[i] *= tmp;
+			prod = iprod = 1;
+			for (int i = 0; i <= Mn - 3; ++i) {
+				rate3[i] = root[i + 3] * prod;
+				irate3[i] = iroot[i + 3] * iprod;
+				prod *= iroot[i + 3];
+				iprod *= root[i + 3];
+			}
+			inv2[0] = 1;
+			mint half = mint(2).inv();
+			for (int i = 1; i <= Mn; ++i) {
+				inv2[i] = inv2[i - 1] * half;
 			}
 		}
 	};
 
-	static inline initializer init;
+	static constexpr RootInfo info{};
+
+	static inline vector<mint> inv{0, 1};
+
+	static void ensure_inv(int n) {
+		if ((int)inv.size() > n) { return; }
+		int old = inv.size();
+		inv.resize(n + 1);
+		for (int i = old; i <= n; ++i) {
+			inv[i] = mint::raw(P - P / i) * inv[P % i];
+		}
+	}
 };
 
 template <int MOD>
 void NTT_DIF(vector<ModInt<MOD>> &a) {
 	using Info = NTTInfo<MOD>;
 	using mint = ModInt<MOD>;
-	(void)Info::init;
 	ASSERT(a.size() && a.size() <= Info::M);
 	ASSERT((a.size() & (a.size() - 1)) == 0);
-	int len = a.size();
-	for (int i = len >> 1; i; i >>= 1) {
-		mint *c = Info::pow_w + i;
-		for (int j = 0; j < len; j += i << 1) {
-			mint *p = a.data() + j, *q = p + i;
-			for (int k = 0; k < i; ++k) {
-				mint s = p[k], t = q[k];
-				p[k] = s + t;
-				q[k] = (s - t) * c[k];
+	constexpr auto &info = Info::info;
+	int len = a.size(), h = std::countr_zero((unsigned)len), dep = 0;
+	while (dep < h) {
+		if (h - dep == 1) {
+			int p = 1 << (h - dep - 1);
+			mint rot = 1;
+			for (int s = 0; s < (1 << dep); ++s) {
+				int offset = s << (h - dep);
+				for (int i = 0; i < p; ++i) {
+					mint l = a[offset + i], r = a[offset + i + p] * rot;
+					a[offset + i] = l + r;
+					a[offset + i + p] = l - r;
+				}
+				if (s + 1 != (1 << dep)) {
+					rot *= info.rate2[std::countr_zero(~(unsigned)s)];
+				}
 			}
+			++dep;
+		} else {
+			int p = 1 << (h - dep - 2);
+			mint rot = 1, imag = info.root[2];
+			for (int s = 0; s < (1 << dep); ++s) {
+				mint rot2 = rot * rot, rot3 = rot2 * rot;
+				int offset = s << (h - dep);
+				for (int i = 0; i < p; ++i) {
+					mint a0 = a[offset + i];
+					mint a1 = a[offset + i + p] * rot;
+					mint a2 = a[offset + i + 2 * p] * rot2;
+					mint a3 = a[offset + i + 3 * p] * rot3;
+					mint a1na3imag = (a1 - a3) * imag;
+					a[offset + i] = a0 + a1 + a2 + a3;
+					a[offset + i + p] = a0 - a1 + a2 - a3;
+					a[offset + i + 2 * p] = a0 - a2 + a1na3imag;
+					a[offset + i + 3 * p] = a0 - a2 - a1na3imag;
+				}
+				if (s + 1 != (1 << dep)) {
+					rot *= info.rate3[std::countr_zero(~(unsigned)s)];
+				}
+			}
+			dep += 2;
 		}
 	}
 }
@@ -78,23 +123,53 @@ template <int MOD>
 void NTT_DIT(vector<ModInt<MOD>> &a) {
 	using Info = NTTInfo<MOD>;
 	using mint = ModInt<MOD>;
-	(void)Info::init;
 	ASSERT(a.size() && a.size() <= Info::M);
 	ASSERT((a.size() & (a.size() - 1)) == 0);
-	int len = a.size();
-	for (int i = 1; i < len; i <<= 1) {
-		mint *c = Info::pow_iw + i;
-		for (int j = 0; j < len; j += i << 1) {
-			mint *p = a.data() + j, *q = p + i;
-			for (int k = 0; k < i; ++k) {
-				mint s = p[k], t = q[k] * c[k];
-				p[k] = s + t;
-				q[k] = s - t;
+	constexpr auto &info = Info::info;
+	int len = a.size(), h = std::countr_zero((unsigned)len), dep = h;
+	while (dep) {
+		if (dep == 1) {
+			int p = 1 << (h - dep);
+			mint irot = 1;
+			for (int s = 0; s < (1 << (dep - 1)); ++s) {
+				int offset = s << (h - dep + 1);
+				for (int i = 0; i < p; ++i) {
+					mint l = a[offset + i], r = a[offset + i + p];
+					a[offset + i] = l + r;
+					a[offset + i + p] = (l - r) * irot;
+				}
+				if (s + 1 != (1 << (dep - 1))) {
+					irot *= info.irate2[std::countr_zero(~(unsigned)s)];
+				}
 			}
+			--dep;
+		} else {
+			int p = 1 << (h - dep);
+			mint irot = 1, iimag = info.iroot[2];
+			for (int s = 0; s < (1 << (dep - 2)); ++s) {
+				mint irot2 = irot * irot, irot3 = irot2 * irot;
+				int offset = s << (h - dep + 2);
+				for (int i = 0; i < p; ++i) {
+					mint a0 = a[offset + i];
+					mint a1 = a[offset + i + p];
+					mint a2 = a[offset + i + 2 * p];
+					mint a3 = a[offset + i + 3 * p];
+					mint a2na3iimag = (a2 - a3) * iimag;
+					a[offset + i] = a0 + a1 + a2 + a3;
+					a[offset + i + p] = (a0 - a1 + a2na3iimag) * irot;
+					a[offset + i + 2 * p] = (a0 + a1 - a2 - a3) * irot2;
+					a[offset + i + 3 * p] = (a0 - a1 - a2na3iimag) * irot3;
+				}
+				if (s + 1 != (1 << (dep - 2))) {
+					irot *= info.irate3[std::countr_zero(~(unsigned)s)];
+				}
+			}
+			dep -= 2;
 		}
 	}
+	mint ilen = info.inv2[h];
 	for (mint &x : a) {
-		x *= Info::inv[len];
+		x *= ilen;
 	}
 }
 
@@ -195,23 +270,12 @@ Poly<MOD> &operator>>=(Poly<MOD> &a, int b) {
 	return a;
 }
 
-template <int MOD>
-Poly<MOD> operator+(Poly<MOD> a, const Poly<MOD> &b) { a += b; return a; }
-
-template <int MOD>
-Poly<MOD> operator-(Poly<MOD> a, const Poly<MOD> &b) { a -= b; return a; }
-
-template <int MOD>
-Poly<MOD> operator*(Poly<MOD> a, const Poly<MOD> &b) { a *= b; return a; }
-
-template <int MOD>
-Poly<MOD> operator*(Poly<MOD> a, ModInt<MOD> k) { a *= k; return a; }
-
-template <int MOD>
-Poly<MOD> operator<<(Poly<MOD> a, int b) { a <<= b; return a; }
-
-template <int MOD>
-Poly<MOD> operator>>(Poly<MOD> a, int b) { a >>= b; return a; }
+template <int MOD> Poly<MOD> operator+(Poly<MOD> a, const Poly<MOD> &b) { a += b; return a; }
+template <int MOD> Poly<MOD> operator-(Poly<MOD> a, const Poly<MOD> &b) { a -= b; return a; }
+template <int MOD> Poly<MOD> operator*(Poly<MOD> a, const Poly<MOD> &b) { a *= b; return a; }
+template <int MOD> Poly<MOD> operator*(Poly<MOD> a, ModInt<MOD> k) { a *= k; return a; }
+template <int MOD> Poly<MOD> operator<<(Poly<MOD> a, int b) { a <<= b; return a; }
+template <int MOD> Poly<MOD> operator>>(Poly<MOD> a, int b) { a >>= b; return a; }
 
 template <int MOD>
 Poly<MOD> Poly<MOD>::derivative() const {
@@ -229,6 +293,7 @@ Poly<MOD> Poly<MOD>::derivative() const {
 template <int MOD>
 Poly<MOD> Poly<MOD>::integral() const {
 	ASSERT(size() && size() <= M);
+	Info::ensure_inv(size());
 	Poly a(size() + 1);
 	for (int i = 0; i < (int)size(); ++i) {
 		a[i + 1] = p[i] * Info::inv[i + 1];
