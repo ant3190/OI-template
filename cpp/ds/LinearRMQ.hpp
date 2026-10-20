@@ -9,7 +9,7 @@ public:
 	LinearRMQ() : n(-1) {}
 	template <class It>
 	LinearRMQ(It s, It e) { build(s, e); }
-	LinearRMQ(const std::vector<T> &vec) { build(vec.begin(), vec.end()); }
+	LinearRMQ(const std::vector<T>& vec) { build(vec.begin(), vec.end()); }
 
 	T query(int l, int r) const {
 		ASSERT(0 <= l && l <= r && r < n);
@@ -30,7 +30,7 @@ private:
 	Cmp cmp;
 	std::vector<T> a;
 	std::vector<ull> mask;
-	RMQ<T, Cmp> rmq;
+	RMQ<T> rmq;
 
 	const T &best(const T &x, const T &y) const {
 		return cmp(y, x) ? y : x;
@@ -65,6 +65,6 @@ private:
 			int r = std::min(n, l + B) - 1;
 			b[i] = small(l, r);
 		}
-		rmq = RMQ<T, Cmp>(b);
+		rmq = RMQ<T>(b, [cmp = cmp](const T& x, const T& y) { return cmp(y, x) ? y : x; });
 	}
 };

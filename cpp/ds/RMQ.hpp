@@ -2,13 +2,20 @@
 
 #include "basics/Assert.hpp"
 
-template <class T, class Cmp = std::less<T>>
+template <class T>
 struct RMQ {
+private:
+	using Op = std::function<T(const T&, const T&)>;
+
 public:
 	RMQ() : n(-1) {}
+
 	template <class It>
-	RMQ(It s, It e) { build(s, e); }
-	RMQ(const std::vector<T>& vec) { build(vec.begin(), vec.end()); }
+	RMQ(It s, It e, Op best = [](const T& x, const T& y) { return std::min(x, y); }) :
+		best(std::move(best)) { build(s, e); }
+
+	RMQ(const std::vector<T>& vec, Op best = [](const T& x, const T& y) { return std::min(x, y); }) :
+		RMQ(vec.begin(), vec.end(), std::move(best)) { }
 
 	T query(int l, int r) const {
 		ASSERT(0 <= l && l <= r && r < n);
@@ -18,12 +25,8 @@ public:
 
 private:
 	int n;
-	Cmp cmp;
+	Op best;
 	std::vector<std::vector<T>> st;
-
-	const T &best(const T &x, const T &y) const {
-		return cmp(y, x) ? y : x;
-	}
 
 	template <class It>
 	void build(It s, It e) {
@@ -33,10 +36,14 @@ private:
 
 		st.resize(32 - __builtin_clz(n));
 		st[0] = std::move(a);
+
 		for (int i = 1; i < (int)st.size(); ++i) {
 			st[i].resize(n - (1 << i) + 1);
 			for (int j = 0; j < (int)st[i].size(); ++j) {
-				st[i][j] = best(st[i - 1][j], st[i - 1][j + (1 << (i - 1))]);
+				st[i][j] = best(
+					st[i - 1][j],
+					st[i - 1][j + (1 << (i - 1))]
+				);
 			}
 		}
 	}

@@ -3,8 +3,12 @@
 #include "basics/Assert.hpp"
 #include "math/ModInt.hpp"
 
-template <class mint>
+template <int P>
 struct Comb {
+private:
+	using mint = ModInt<P>;
+
+public:
 	Comb() {}
 	Comb(int n) { init(n); }
 
@@ -22,7 +26,7 @@ struct Comb {
 		ASSERT(n < (int)_fac.size());
 		return _fac[n] * _ifac[m] * _ifac[n - m];
 	}
-	mint P(int n, int m) const {
+	mint A(int n, int m) const {
 		if (m < 0 || m > n) { return mint(0); }
 		ASSERT(n < (int)_fac.size());
 		return _fac[n] * _ifac[n - m];

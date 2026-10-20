@@ -3,7 +3,6 @@
 #include "geometry/Point.hpp"
 
 // 1/0/-1 : Left/On line/Right
-template <class P> int side_of(P s, P e, P p) { return sgn((e - s) ^ (p - s)); }
 template <class P> double line_dist(P s, P e, P p) { ASSERT(s != e); return std::fabs((double)((e - s) ^ (p - s)) / (e - s).len()); }
 template <class P> double seg_dist(P s, P e, P p) {
 	if (s == e) { return (p - s).len(); }

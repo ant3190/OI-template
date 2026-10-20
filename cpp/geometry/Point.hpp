@@ -36,6 +36,8 @@ struct Point {
 template <class T> T dist2(Point<T> a, Point<T> b) { return (b - a).len2(); }
 template <class P> double dist(P a, P b) { return (b - a).len(); }
 
+template <class P> int side_of(P s, P e, P p) { return sgn((e - s) ^ (p - s)); }
+
 template <class P> void polar_sort(std::vector<P> &v, P o = P()) {
 	auto half = [](const P& p) {
 		return p.y < 0 || (p.y == 0 && p.x < 0);
