@@ -1,13 +1,9 @@
 #pragma once
 
 #include "basics/Assert.hpp"
-#include "math/ModInt.hpp"
 
-template <int P>
+template <class mint>
 struct Comb {
-private:
-	using mint = ModInt<P>;
-
 public:
 	Comb() {}
 	Comb(int n) { init(n); }
