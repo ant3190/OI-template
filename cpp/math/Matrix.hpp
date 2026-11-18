@@ -3,18 +3,22 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cstddef>
+#include <functional>
 #include <initializer_list>
 #include <utility>
 #include <vector>
 #include "basics/Assert.hpp"
+#include "utility/Identity.hpp"
 
-template <class T>
+template <class T, class Add = std::plus<>, class Mul = std::multiplies<>,
+		auto Zero = nullptr, auto One = nullptr>
 struct Matrix {
 	int n, m;
 	std::vector<std::vector<T>> a;
 
 	Matrix() : n(), m() {}
-	Matrix(int n, int m) : n(n), m(m), a(n, std::vector<T>(m)) {}
+	Matrix(int n, int m) : n(n), m(m), a(n, std::vector<T>(m, zero())) {}
 	Matrix(int n, int m, T v) : Matrix(n, m) {
 		for (int i = 0; i < std::min(n, m); ++i) {
 			a[i][i] = v;
@@ -44,7 +48,7 @@ struct Matrix {
 		ASSERT(n == b.n && m == b.m);
 		for (int i = 0; i < n; ++i) {
 			for (int j = 0; j < m; ++j) {
-				a[i][j] += b[i][j];
+				a[i][j] = Add{}(a[i][j], b[i][j]);
 			}
 		}
 		return *this;
@@ -60,42 +64,46 @@ struct Matrix {
 		return *this;
 	}
 
-	Matrix &operator*=(const Matrix &b) {
-		ASSERT(m == b.n);
-		Matrix res(n, b.m);
-		for (int i = 0; i < n; ++i) {
-			for (int k = 0; k < m; ++k) {
-				for (int j = 0; j < b.m; ++j) {
-					res[i][j] += a[i][k] * b[k][j];
-				}
-			}
-		}
-		return *this = std::move(res);
-	}
-
+	Matrix &operator*=(const Matrix &b) { return *this = *this * b; }
 	friend Matrix operator+(Matrix a, const Matrix &b) { return a += b; }
 	friend Matrix operator-(Matrix a, const Matrix &b) { return a -= b; }
-	friend Matrix operator*(Matrix a, const Matrix &b) { return a *= b; }
-
-	Matrix pow(long long k) const {
-		ASSERT(n == m && k >= 0);
-		Matrix res(n, n, T(1)), x = *this;
-		for (; k; k >>= 1, x *= x) {
-			if (k & 1) {
-				res *= x;
+	friend Matrix operator*(const Matrix &a, const Matrix &b) {
+		ASSERT(a.m == b.n);
+		Matrix res(a.n, b.m);
+		for (int i = 0; i < a.n; ++i) {
+			for (int k = 0; k < a.m; ++k) {
+				for (int j = 0; j < b.m; ++j) {
+					res[i][j] = Add{}(res[i][j], Mul{}(a[i][k], b[k][j]));
+				}
 			}
 		}
 		return res;
 	}
+
+	Matrix pow(long long k) const {
+		ASSERT(n == m && k >= 0);
+		Matrix res(n, n, one()), x = *this;
+		while (k) {
+			if (k & 1) { res *= x; }
+			k >>= 1;
+			if (k) { x *= x; }
+		}
+		return res;
+	}
+
+private:
+	static constexpr T zero() { return identity_detail::get<T, Zero>(); }
+	static constexpr T one() { return identity_detail::get<T, One, true>(); }
 };
 
-template <class T, int N>
+template <class T, int N, class Add = std::plus<>, class Mul = std::multiplies<>,
+		auto Zero = nullptr, auto One = nullptr>
 struct SquareMatrix {
 	static_assert(N >= 0);
 	static constexpr int n = N, m = N;
 	using Row = std::array<T, N>;
 	using Storage = std::array<Row, N>;
-	Storage a{};
+	Storage a = filled(zero());
 
 	constexpr SquareMatrix() = default;
 	explicit constexpr SquareMatrix(T v) {
@@ -121,7 +129,7 @@ struct SquareMatrix {
 	constexpr SquareMatrix &operator+=(const SquareMatrix &b) {
 		for (int i = 0; i < N; ++i) {
 			for (int j = 0; j < N; ++j) {
-				a[i][j] += b[i][j];
+				a[i][j] = Add{}(a[i][j], b[i][j]);
 			}
 		}
 		return *this;
@@ -147,7 +155,7 @@ struct SquareMatrix {
 		for (int i = 0; i < N; ++i) {
 			for (int k = 0; k < N; ++k) {
 				for (int j = 0; j < N; ++j) {
-					res[i][j] += a[i][k] * b[k][j];
+					res[i][j] = Add{}(res[i][j], Mul{}(a[i][k], b[k][j]));
 				}
 			}
 		}
@@ -156,13 +164,26 @@ struct SquareMatrix {
 
 	constexpr SquareMatrix pow(long long k) const {
 		ASSERT(k >= 0);
-		SquareMatrix res(T(1)), x = *this;
+		SquareMatrix res(one()), x = *this;
 		while (k) {
 			if (k & 1) { res *= x; }
 			k >>= 1;
 			if (k) { x *= x; }
 		}
 		return res;
+	}
+
+private:
+	static constexpr T zero() { return identity_detail::get<T, Zero>(); }
+	static constexpr T one() { return identity_detail::get<T, One, true>(); }
+
+	template <class U, std::size_t... I>
+	static constexpr std::array<U, N> repeated(const U &value, std::index_sequence<I...>) {
+		return {{(static_cast<void>(I), value)...}};
+	}
+	static constexpr Storage filled(const T &value) {
+		using Indices = std::make_index_sequence<N>;
+		return repeated(repeated(value, Indices{}), Indices{});
 	}
 };
 

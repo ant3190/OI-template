@@ -3,20 +3,19 @@
 #include <algorithm>
 #include <cassert>
 #include <functional>
-#include <utility>
 #include <vector>
 #include "basics/Assert.hpp"
+#include "utility/Identity.hpp"
 
-template <class S, class T, class Op = std::plus<>, class Apply = std::plus<>, class Compose = std::plus<>>
+template <class S, class T, class Op = std::plus<>, class Apply = std::plus<>, class Compose = std::plus<>,
+		auto E = nullptr, auto TagId = nullptr>
 struct LazySegTree {
 public:
-	LazySegTree() : n(-1), op(), apply(), compose(), e() {}
-	LazySegTree(int n, Op op = Op(), Apply apply = Apply(), Compose compose = Compose(), S e = S()) :
+	LazySegTree() : n(-1) {}
+	LazySegTree(int n) :
 		n((ASSERT(n > 0), n)), ht(n == 1 ? 0 : 32 - __builtin_clz(n - 1)), m(1 << ht),
-		op(std::move(op)), apply(std::move(apply)), compose(std::move(compose)), e(std::move(e)),
-		tr(m << 1, this->e), tag(m), vis(m) {}
-	LazySegTree(int n, S *v, Op op = Op(), Apply apply = Apply(), Compose compose = Compose(), S e = S()) :
-		LazySegTree(n, std::move(op), std::move(apply), std::move(compose), std::move(e)) {
+		tr(m << 1, identity()), tag(m, tag_identity()), vis(m) {}
+	LazySegTree(int n, S *v) : LazySegTree(n) {
 		for (int i = 1; i <= n; ++i) { tr[i + m - 1] = v[i]; }
 		for (int i = m - 1; i >= 1; --i) { pushup(i); }
 	}
@@ -54,39 +53,39 @@ public:
 		S res = tr[k + m - 1];
 		// A pending ancestor tag is newer than any tag below it.
 		for (int p = (k + m - 1) >> 1; p; p >>= 1) {
-			if (vis[p]) { res = apply(res, tag[p]); }
+			if (vis[p]) { res = Apply{}(res, tag[p]); }
 		}
 		return res;
 	}
 	S query(int l, int r) {
 		ASSERT(l > 0 && r <= n);
-		if (l > r) { return e; }
+		if (l > r) { return identity(); }
 		down(l), down(r);
-		S sml = e, smr = e;
+		S sml = identity(), smr = identity();
 		for (int lt = l + m - 1, rt = r + m; lt < rt; lt >>= 1, rt >>= 1) {
-			if (lt & 1) { sml = op(sml, tr[lt++]); }
-			if (rt & 1) { smr = op(tr[--rt], smr); }
+			if (lt & 1) { sml = Op{}(sml, tr[lt++]); }
+			if (rt & 1) { smr = Op{}(tr[--rt], smr); }
 		}
-		return op(sml, smr);
+		return Op{}(sml, smr);
 	}
 	template <class F>
 	int firstright(int k, F check) {
 		ASSERT(k > 0 && k <= n + 1);
-		if (check(S(e))) { return k - 1; }
+		if (check(identity())) { return k - 1; }
 		if (k == n + 1) { return n + 1; }
 		down(k);
 		int kt = k + m - 1;
-		S cur = e;
+		S cur = identity();
 		do {
 			while (~kt & 1) { kt >>= 1; }
-			if (check(op(cur, tr[kt]))) {
+			if (check(Op{}(cur, tr[kt]))) {
 				while (kt < m) {
 					pushdown(kt);
-					if (!check(op(cur, tr[kt <<= 1]))) { cur = op(cur, tr[kt++]); }
+					if (!check(Op{}(cur, tr[kt <<= 1]))) { cur = Op{}(cur, tr[kt++]); }
 				}
 				return kt - m + 1;
 			}
-			cur = op(cur, tr[kt]);
+			cur = Op{}(cur, tr[kt]);
 			++kt;
 		} while (kt ^ (kt & -kt));
 		return n + 1;
@@ -94,56 +93,55 @@ public:
 	template <class F>
 	int firstleft(int k, F check) {
 		ASSERT(k >= 0 && k <= n);
-		if (check(S(e))) { return k + 1; }
+		if (check(identity())) { return k + 1; }
 		if (k == 0) { return 0; }
 		down(k);
 		int kt = k + m;
-		S cur = e;
+		S cur = identity();
 		do {
 			--kt;
 			while (kt > 1 && kt & 1) { kt >>= 1; }
-			if (check(op(tr[kt], cur))) {
+			if (check(Op{}(tr[kt], cur))) {
 				while (kt < m) {
 					pushdown(kt);
-					if (!check(op(tr[kt = kt << 1 | 1], cur))) { cur = op(tr[kt--], cur); }
+					if (!check(Op{}(tr[kt = kt << 1 | 1], cur))) { cur = Op{}(tr[kt--], cur); }
 				}
 				return kt - m + 1;
 			}
-			cur = op(tr[kt], cur);
+			cur = Op{}(tr[kt], cur);
 		} while (kt ^ (kt & -kt));
 		return 0;
 	}
 	void clear() { 
 		ASSERT(n != -1);
-		std::fill(tr.begin(), tr.end(), e);
-		std::fill(tag.begin(), tag.end(), T());
+		std::fill(tr.begin(), tr.end(), identity());
+		std::fill(tag.begin(), tag.end(), tag_identity());
 		std::fill(vis.begin(), vis.end(), 0);
 	}
 	
 private:
 	int n, ht, m;
-	Op op;
-	Apply apply;
-	Compose compose;
-	S e;
 	std::vector<S> tr;
 	std::vector<T> tag;
 	std::vector<int> vis;
 	
+	static constexpr S identity() { return identity_detail::get<S, E>(); }
+	static constexpr T tag_identity() { return identity_detail::get<T, TagId>(); }
+
 	void pushtag(int p, const T &x) {
-		tr[p] = apply(tr[p], x);
+		tr[p] = Apply{}(tr[p], x);
 		if (p < m) {
-			tag[p] = vis[p] ? compose(tag[p], x) : x;
+			tag[p] = vis[p] ? Compose{}(tag[p], x) : x;
 			vis[p] = 1;
 		}
 	}
 	void pushup(int p) {
-		if (!vis[p]) { tr[p] = op(tr[p << 1], tr[p << 1 | 1]); }
+		if (!vis[p]) { tr[p] = Op{}(tr[p << 1], tr[p << 1 | 1]); }
 	}
 	void pushdown(int p) {
 		if (vis[p]) {
 			pushtag(p << 1, tag[p]), pushtag(p << 1 | 1, tag[p]);
-			tag[p] = T(), vis[p] = 0;
+			tag[p] = tag_identity(), vis[p] = 0;
 		}
 	}
 	void up(int k) {
