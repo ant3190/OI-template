@@ -14,7 +14,7 @@ public:
 	void init(int N) {
 		ASSERT(N > 0);
 		n = N, ht = (n == 1 ? 0 : 32 - __builtin_clz(n - 1)), m = (1 << ht);
-		tr = std::vector<T>(m << 1, identity()), tag = std::vector<T>(m, tag_identity()), vis = std::vector<int>(m);
+		tr = std::vector<S>(m << 1, identity()), tag = std::vector<T>(m, tag_identity()), vis = std::vector<int>(m);
 	}
 	void init(int n, S *v) {
 		init(n);

@@ -1,12 +1,5 @@
 #pragma once
 
-#include <algorithm>
-#include <array>
-#include <cassert>
-#include <cstddef>
-#include <functional>
-#include <initializer_list>
-#include <utility>
 #include "basics/Assert.hpp"
 #include "utility/Identity.hpp"
 
@@ -19,7 +12,7 @@ struct StaticVector {
 
 	constexpr StaticVector() = default;
 	explicit constexpr StaticVector(const T &v) : a(filled(v, std::make_index_sequence<N>{})) {}
-	explicit constexpr StaticVector(Storage v) : a(std::move(v)) {}
+	constexpr StaticVector(Storage v) : a(std::move(v)) {}
 	constexpr StaticVector(std::initializer_list<T> v) {
 		ASSERT(v.size() <= static_cast<std::size_t>(N));
 		int i = 0;
@@ -109,7 +102,7 @@ struct StaticMatrix {
 			a[i][i] = v;
 		}
 	}
-	explicit constexpr StaticMatrix(Storage v) : a(std::move(v)) {}
+	constexpr StaticMatrix(Storage v) : a(std::move(v)) {}
 
 	constexpr Row &operator[](int i) { return a[i]; }
 	constexpr const Row &operator[](int i) const { return a[i]; }
