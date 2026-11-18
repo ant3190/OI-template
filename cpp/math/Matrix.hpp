@@ -9,43 +9,33 @@ struct Vector {
 	std::vector<T> a;
 
 	Vector() : n() {}
-	Vector(int n) : n(n), a(initial(n)) {}
+	Vector(int n) : n(n), a(init(n)) {}
 	Vector(int n, T v) : n(n), a(n, v) {}
 	Vector(std::vector<T> v) : n(v.size()), a(std::move(v)) {}
 	Vector(std::initializer_list<T> v) : n(v.size()), a(v) {}
 
-	typename std::vector<T>::reference operator[](int i) { return a[i]; }
-
-	typename std::vector<T>::const_reference operator[](int i) const { return a[i]; }
+	decltype(auto) operator[](int i) { return a[i]; }
+	decltype(auto) operator[](int i) const { return a[i]; }
 
 	Vector &operator+=(const Vector &b) {
 		ASSERT(n == b.n);
-		for (int i = 0; i < n; ++i) {
-			add_assign(a[i], b[i]);
-		}
+		for (int i = 0; i < n; ++i) { add(a[i], b[i]); }
 		return *this;
 	}
 	Vector &operator-=(const Vector &b) {
 		ASSERT(n == b.n);
-		for (int i = 0; i < n; ++i) {
-			a[i] -= b[i];
-		}
+		for (int i = 0; i < n; ++i) { a[i] -= b[i]; }
 		return *this;
 	}
 	Vector &operator*=(const T &k) {
 		for (int i = 0; i < n; ++i) {
-			if constexpr (std::is_same_v<Mul, std::multiplies<>> && !std::is_invocable_v<Mul, T&, const T&>) {
-				a[i] *= k;
-			} else {
-				a[i] = Mul{}(a[i], k);
-			}
+			if constexpr (std::is_same_v<Mul, std::multiplies<>> && !std::is_invocable_v<Mul, T&, const T&>) { a[i] *= k; }
+			else { a[i] = Mul{}(a[i], k); }
 		}
 		return *this;
 	}
 	Vector &operator/=(const T &k) {
-		for (int i = 0; i < n; ++i) {
-			a[i] /= k;
-		}
+		for (int i = 0; i < n; ++i) { a[i] /= k; }
 		return *this;
 	}
 
@@ -53,11 +43,8 @@ struct Vector {
 	friend Vector operator-(Vector a, const Vector &b) { return a -= b; }
 	friend Vector operator*(Vector a, const T &k) { return a *= k; }
 	friend Vector operator*(const T &k, Vector a) {
-		if constexpr (std::is_same_v<Mul, std::multiplies<>>) {
-			a *= k;
-		} else {
-			for (int i = 0; i < a.n; ++i) { a[i] = Mul{}(k, a[i]); }
-		}
+		if constexpr (std::is_same_v<Mul, std::multiplies<>>) { a *= k; }
+		else for (int i = 0; i < a.n; ++i) { a[i] = Mul{}(k, a[i]); }
 		return a;
 	}
 	friend Vector operator/(Vector a, const T &k) { return a /= k; }
@@ -65,27 +52,22 @@ struct Vector {
 	T dot(const Vector &b) const {
 		ASSERT(n == b.n);
 		T res = zero();
-		for (int i = 0; i < n; ++i) {
-			add_assign(res, Mul{}(a[i], b[i]));
-		}
+		for (int i = 0; i < n; ++i) { add(res, Mul{}(a[i], b[i])); }
 		return res;
 	}
 
 private:
 	static constexpr T zero() { return identity_detail::get<T, Zero>(); }
 
-	static std::vector<T> initial(int n) {
+	static std::vector<T> init(int n) {
 		if constexpr (std::is_same_v<decltype(Zero), std::nullptr_t>) { return std::vector<T>(n); }
 		else { return std::vector<T>(n, zero()); }
 	}
 
 	template <class L, class R>
-	static void add_assign(L &&a, R &&b) {
-		if constexpr (std::is_same_v<Add, std::plus<>> && !std::is_invocable_v<Add, L&, R&&>) {
-			a += std::forward<R>(b);
-		} else {
-			a = Add{}(a, std::forward<R>(b));
-		}
+	static void add(L &&x, R &&y) {
+		if constexpr (std::is_same_v<Add, std::plus<>> && !std::is_invocable_v<Add, L&, R&&>) { x += std::forward<R>(y); }
+		else { x = Add{}(x, std::forward<R>(y)); }
 	}
 };
 
@@ -97,26 +79,28 @@ struct Matrix {
 	Matrix() : n(), m() {}
 	Matrix(int n, int m) : n(n), m(m), a(n, std::vector<T>(m, zero())) {}
 	Matrix(int n, int m, T v) : Matrix(n, m) {
-		for (int i = 0; i < std::min(n, m); ++i) {
-			a[i][i] = v;
-		}
+		for (int i = 0; i < n && i < m; ++i) { a[i][i] = v; }
 	}
 	Matrix(std::vector<std::vector<T>> v)
 		: n(v.size()), m(n ? v[0].size() : 0), a(std::move(v)) {
-		for (int i = 0; i < n; ++i) {
-			ASSERT((int)a[i].size() == m);
+		for (int i = 0; i < n; ++i) { ASSERT((int)a[i].size() == m); }
+	}
+	Matrix(std::initializer_list<std::initializer_list<T>> v)
+		: n(v.size()), m(n ? v.begin()->size() : 0) {
+		a.reserve(n);
+		for (const auto &row : v) {
+			ASSERT((int)row.size() == m);
+			a.emplace_back(row);
 		}
 	}
 
-	std::vector<T> &operator[](int i) { return a[i]; }
-	const std::vector<T> &operator[](int i) const { return a[i]; }
+	auto &operator[](int i) { return a[i]; }
+	const auto &operator[](int i) const { return a[i]; }
 
 	Matrix transpose() const {
 		Matrix res(m, n);
 		for (int i = 0; i < n; ++i) {
-			for (int j = 0; j < m; ++j) {
-				res[j][i] = a[i][j];
-			}
+			for (int j = 0; j < m; ++j) { res[j][i] = a[i][j]; }
 		}
 		return res;
 	}
@@ -124,9 +108,7 @@ struct Matrix {
 	Matrix &operator+=(const Matrix &b) {
 		ASSERT(n == b.n && m == b.m);
 		for (int i = 0; i < n; ++i) {
-			for (int j = 0; j < m; ++j) {
-				a[i][j] = Add{}(a[i][j], b[i][j]);
-			}
+			for (int j = 0; j < m; ++j) { a[i][j] = Add{}(a[i][j], b[i][j]); }
 		}
 		return *this;
 	}
@@ -134,9 +116,7 @@ struct Matrix {
 	Matrix &operator-=(const Matrix &b) {
 		ASSERT(n == b.n && m == b.m);
 		for (int i = 0; i < n; ++i) {
-			for (int j = 0; j < m; ++j) {
-				a[i][j] -= b[i][j];
-			}
+			for (int j = 0; j < m; ++j) { a[i][j] -= b[i][j]; }
 		}
 		return *this;
 	}
@@ -157,11 +137,10 @@ struct Matrix {
 		return res;
 	}
 
-	template <class VecAdd, class VecMul, auto VecZero>
-	friend Vector<T, VecAdd, VecMul, VecZero> operator*(
-			const Matrix &a, const Vector<T, VecAdd, VecMul, VecZero> &b) {
+	template <class A, class B, auto Z>
+	friend auto operator*(const Matrix &a, const Vector<T, A, B, Z> &b) {
 		ASSERT(a.m == b.n);
-		Vector<T, VecAdd, VecMul, VecZero> res(a.n, zero());
+		Vector<T, A, B, Z> res(a.n, zero());
 		for (int i = 0; i < a.n; ++i) {
 			for (int j = 0; j < a.m; ++j) {
 				res[i] = Add{}(res[i], Mul{}(a[i][j], b[j]));
@@ -170,11 +149,10 @@ struct Matrix {
 		return res;
 	}
 
-	template <class VecAdd, class VecMul, auto VecZero>
-	friend Vector<T, VecAdd, VecMul, VecZero> operator*(
-			const Vector<T, VecAdd, VecMul, VecZero> &a, const Matrix &b) {
+	template <class A, class B, auto Z>
+	friend auto operator*(const Vector<T, A, B, Z> &a, const Matrix &b) {
 		ASSERT(a.n == b.n);
-		Vector<T, VecAdd, VecMul, VecZero> res(b.m, zero());
+		Vector<T, A, B, Z> res(b.m, zero());
 		for (int i = 0; i < b.n; ++i) {
 			for (int j = 0; j < b.m; ++j) {
 				res[j] = Add{}(res[j], Mul{}(a[i], b[i][j]));
