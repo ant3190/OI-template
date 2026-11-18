@@ -7,7 +7,6 @@
 #include <vector>
 #include "basics/Assert.hpp"
 
-// op is associative, with identity e.
 template <class S, class Op = std::plus<>>
 struct SegTree {
 public:

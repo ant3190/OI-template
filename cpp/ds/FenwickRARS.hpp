@@ -2,7 +2,6 @@
 
 #include "ds/Fenwick.hpp"
 
-// The difference formula uses a commutative group and integer scaling.
 template <class T, class Op = std::plus<>, class Sub = std::minus<>, class Scale = std::multiplies<>>
 struct FenwickRARS {
 public:

@@ -7,7 +7,6 @@
 #include <vector>
 #include "basics/Assert.hpp"
 
-// op is associative and commutative, with identity e. sub(a, b) removes b from a.
 template <class T, class Op = std::plus<>, class Sub = std::minus<>>
 struct Fenwick2D {
 public:

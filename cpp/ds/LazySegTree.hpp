@@ -7,8 +7,6 @@
 #include <vector>
 #include "basics/Assert.hpp"
 
-// op merges segments with identity e. apply(s, x) maps a tag over a segment.
-// compose(old, x) applies old then x. apply must distribute over op.
 template <class S, class T, class Op = std::plus<>, class Apply = std::plus<>, class Compose = std::plus<>>
 struct LazySegTree {
 public:
