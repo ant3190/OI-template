@@ -1,5 +1,11 @@
 #pragma once
 
+#include <algorithm>
+#include <array>
+#include <cassert>
+#include <initializer_list>
+#include <utility>
+#include <vector>
 #include "basics/Assert.hpp"
 
 template <class T>
@@ -83,7 +89,82 @@ struct Matrix {
 	}
 };
 
+template <class T, int N>
+struct SquareMatrix {
+	static_assert(N >= 0);
+	static constexpr int n = N, m = N;
+	using Row = std::array<T, N>;
+	using Storage = std::array<Row, N>;
+	Storage a{};
 
+	constexpr SquareMatrix() = default;
+	explicit constexpr SquareMatrix(T v) {
+		for (int i = 0; i < N; ++i) {
+			a[i][i] = v;
+		}
+	}
+	explicit constexpr SquareMatrix(Storage v) : a(std::move(v)) {}
+
+	constexpr Row &operator[](int i) { return a[i]; }
+	constexpr const Row &operator[](int i) const { return a[i]; }
+
+	constexpr SquareMatrix transpose() const {
+		SquareMatrix res;
+		for (int i = 0; i < N; ++i) {
+			for (int j = 0; j < N; ++j) {
+				res[j][i] = a[i][j];
+			}
+		}
+		return res;
+	}
+
+	constexpr SquareMatrix &operator+=(const SquareMatrix &b) {
+		for (int i = 0; i < N; ++i) {
+			for (int j = 0; j < N; ++j) {
+				a[i][j] += b[i][j];
+			}
+		}
+		return *this;
+	}
+
+	constexpr SquareMatrix &operator-=(const SquareMatrix &b) {
+		for (int i = 0; i < N; ++i) {
+			for (int j = 0; j < N; ++j) {
+				a[i][j] -= b[i][j];
+			}
+		}
+		return *this;
+	}
+
+	constexpr SquareMatrix &operator*=(const SquareMatrix &b) {
+		return *this = *this * b;
+	}
+
+	friend constexpr SquareMatrix operator+(SquareMatrix a, const SquareMatrix &b) { return a += b; }
+	friend constexpr SquareMatrix operator-(SquareMatrix a, const SquareMatrix &b) { return a -= b; }
+	friend constexpr SquareMatrix operator*(const SquareMatrix &a, const SquareMatrix &b) {
+		SquareMatrix res;
+		for (int i = 0; i < N; ++i) {
+			for (int k = 0; k < N; ++k) {
+				for (int j = 0; j < N; ++j) {
+					res[i][j] += a[i][k] * b[k][j];
+				}
+			}
+		}
+		return res;
+	}
+
+	constexpr SquareMatrix pow(long long k) const {
+		ASSERT(k >= 0);
+		SquareMatrix res(T(1)), x = *this;
+		while (k) {
+			if (k & 1) { res *= x; }
+			k >>= 1;
+			if (k) { x *= x; }
+		}
+		return res;
+	}
+};
 
 template <class T>
 struct Vector {
