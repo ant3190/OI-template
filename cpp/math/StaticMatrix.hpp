@@ -10,29 +10,15 @@
 #include "basics/Assert.hpp"
 #include "utility/Identity.hpp"
 
-namespace static_matrix_detail {
-
-template <class T, std::size_t... I>
-constexpr std::array<T, sizeof...(I)> repeated(const T &value, std::index_sequence<I...>) {
-	return {{(static_cast<void>(I), value)...}};
-}
-
-template <std::size_t N, class T>
-constexpr std::array<T, N> filled(const T &value) {
-	return repeated(value, std::make_index_sequence<N>{});
-}
-
-}
-
-template <class T, int N>
+template <class T, int N, class Add = std::plus<>, class Mul = std::multiplies<>, auto Zero = nullptr>
 struct StaticVector {
 	static_assert(N >= 0);
 	static constexpr int n = N;
 	using Storage = std::array<T, N>;
-	Storage a{};
+	Storage a = initial();
 
 	constexpr StaticVector() = default;
-	explicit constexpr StaticVector(const T &v) : a(static_matrix_detail::filled<N>(v)) {}
+	explicit constexpr StaticVector(const T &v) : a(filled(v, std::make_index_sequence<N>{})) {}
 	explicit constexpr StaticVector(Storage v) : a(std::move(v)) {}
 	constexpr StaticVector(std::initializer_list<T> v) {
 		ASSERT(v.size() <= static_cast<std::size_t>(N));
@@ -44,7 +30,7 @@ struct StaticVector {
 	constexpr const T &operator[](int i) const { return a[i]; }
 
 	constexpr StaticVector &operator+=(const StaticVector &b) {
-		for (int i = 0; i < N; ++i) { a[i] += b[i]; }
+		for (int i = 0; i < N; ++i) { add_assign(a[i], b[i]); }
 		return *this;
 	}
 	constexpr StaticVector &operator-=(const StaticVector &b) {
@@ -52,7 +38,13 @@ struct StaticVector {
 		return *this;
 	}
 	constexpr StaticVector &operator*=(const T &k) {
-		for (auto &x : a) { x *= k; }
+		for (auto &x : a) {
+			if constexpr (std::is_same_v<Mul, std::multiplies<>> && !std::is_invocable_v<Mul, T&, const T&>) {
+				x *= k;
+			} else {
+				x = Mul{}(x, k);
+			}
+		}
 		return *this;
 	}
 	constexpr StaticVector &operator/=(const T &k) {
@@ -63,13 +55,42 @@ struct StaticVector {
 	friend constexpr StaticVector operator+(StaticVector a, const StaticVector &b) { return a += b; }
 	friend constexpr StaticVector operator-(StaticVector a, const StaticVector &b) { return a -= b; }
 	friend constexpr StaticVector operator*(StaticVector a, const T &k) { return a *= k; }
-	friend constexpr StaticVector operator*(const T &k, StaticVector a) { return a *= k; }
+	friend constexpr StaticVector operator*(const T &k, StaticVector a) {
+		if constexpr (std::is_same_v<Mul, std::multiplies<>>) {
+			a *= k;
+		} else {
+			for (auto &x : a.a) { x = Mul{}(k, x); }
+		}
+		return a;
+	}
 	friend constexpr StaticVector operator/(StaticVector a, const T &k) { return a /= k; }
 
 	constexpr T dot(const StaticVector &b) const {
-		T res = T();
-		for (int i = 0; i < N; ++i) { res += a[i] * b[i]; }
+		T res = zero();
+		for (int i = 0; i < N; ++i) { add_assign(res, Mul{}(a[i], b[i])); }
 		return res;
+	}
+
+private:
+	static constexpr T zero() { return identity_detail::get<T, Zero>(); }
+
+	static constexpr Storage initial() {
+		if constexpr (std::is_same_v<decltype(Zero), std::nullptr_t>) { return {}; }
+		else { return filled(zero(), std::make_index_sequence<N>{}); }
+	}
+
+	template <std::size_t... I>
+	static constexpr Storage filled(const T &value, std::index_sequence<I...>) {
+		return {{(static_cast<void>(I), value)...}};
+	}
+
+	template <class U>
+	static constexpr void add_assign(T &a, U &&b) {
+		if constexpr (std::is_same_v<Add, std::plus<>> && !std::is_invocable_v<Add, T&, U&&>) {
+			a += std::forward<U>(b);
+		} else {
+			a = Add{}(a, std::forward<U>(b));
+		}
 	}
 };
 
@@ -80,7 +101,7 @@ struct StaticMatrix {
 	static constexpr int n = R, m = C;
 	using Row = std::array<T, C>;
 	using Storage = std::array<Row, R>;
-	Storage a = static_matrix_detail::filled<R>(static_matrix_detail::filled<C>(zero()));
+	Storage a = filled();
 
 	constexpr StaticMatrix() = default;
 	explicit constexpr StaticMatrix(T v) {
@@ -141,8 +162,10 @@ struct StaticMatrix {
 		return res;
 	}
 
-	friend constexpr StaticVector<T, R> operator*(const StaticMatrix &a, const StaticVector<T, C> &b) {
-		StaticVector<T, R> res(zero());
+	template <class VecAdd, class VecMul, auto VecZero>
+	friend constexpr StaticVector<T, R, VecAdd, VecMul, VecZero> operator*(
+			const StaticMatrix &a, const StaticVector<T, C, VecAdd, VecMul, VecZero> &b) {
+		StaticVector<T, R, VecAdd, VecMul, VecZero> res(zero());
 		for (int i = 0; i < R; ++i) {
 			for (int j = 0; j < C; ++j) {
 				res[i] = Add{}(res[i], Mul{}(a[i][j], b[j]));
@@ -151,8 +174,10 @@ struct StaticMatrix {
 		return res;
 	}
 
-	friend constexpr StaticVector<T, C> operator*(const StaticVector<T, R> &a, const StaticMatrix &b) {
-		StaticVector<T, C> res(zero());
+	template <class VecAdd, class VecMul, auto VecZero>
+	friend constexpr StaticVector<T, C, VecAdd, VecMul, VecZero> operator*(
+			const StaticVector<T, R, VecAdd, VecMul, VecZero> &a, const StaticMatrix &b) {
+		StaticVector<T, C, VecAdd, VecMul, VecZero> res(zero());
 		for (int i = 0; i < R; ++i) {
 			for (int j = 0; j < C; ++j) {
 				res[j] = Add{}(res[j], Mul{}(a[i], b[i][j]));
@@ -176,4 +201,9 @@ struct StaticMatrix {
 private:
 	static constexpr T zero() { return identity_detail::get<T, Zero>(); }
 	static constexpr T one() { return identity_detail::get<T, One, true>(); }
+
+	static constexpr Storage filled() {
+		const Row row = StaticVector<T, C>(zero()).a;
+		return StaticVector<Row, R>(row).a;
+	}
 };
