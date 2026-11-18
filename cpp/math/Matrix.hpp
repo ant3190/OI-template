@@ -1,18 +1,9 @@
 #pragma once
 
-#include <algorithm>
-#include <array>
-#include <cassert>
-#include <cstddef>
-#include <functional>
-#include <initializer_list>
-#include <utility>
-#include <vector>
 #include "basics/Assert.hpp"
 #include "utility/Identity.hpp"
 
-template <class T, class Add = std::plus<>, class Mul = std::multiplies<>,
-		auto Zero = nullptr, auto One = nullptr>
+template <class T, class Add = std::plus<>, class Mul = std::multiplies<>, auto Zero = nullptr, auto One = nullptr>
 struct Matrix {
 	int n, m;
 	std::vector<std::vector<T>> a;
@@ -96,8 +87,7 @@ private:
 	static constexpr T one() { return identity_detail::get<T, One, true>(); }
 };
 
-template <class T, int N, class Add = std::plus<>, class Mul = std::multiplies<>,
-		auto Zero = nullptr, auto One = nullptr>
+template <class T, int N, class Add = std::plus<>, class Mul = std::multiplies<>, auto Zero = nullptr, auto One = nullptr>
 struct SquareMatrix {
 	static_assert(N >= 0);
 	static constexpr int n = N, m = N;
@@ -203,14 +193,14 @@ struct Vector {
 	const T &operator[](int i) const { return a[i]; }
 
 	Vector &operator+=(const Vector &b) {
-		assert(n == b.n);
+		ASSERT(n == b.n);
 		for (int i = 0; i < n; ++i) {
 			a[i] += b[i];
 		}
 		return *this;
 	}
 	Vector &operator-=(const Vector &b) {
-		assert(n == b.n);
+		ASSERT(n == b.n);
 		for (int i = 0; i < n; ++i) {
 			a[i] -= b[i];
 		}
@@ -236,7 +226,7 @@ struct Vector {
 	friend Vector operator/(Vector a, const T &k) { return a /= k; }
 
 	T dot(const Vector &b) const {
-		assert(n == b.n);
+		ASSERT(n == b.n);
 		T res = T();
 		for (int i = 0; i < n; ++i) {
 			res += a[i] * b[i];

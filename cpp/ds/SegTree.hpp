@@ -1,9 +1,5 @@
 #pragma once
 
-#include <algorithm>
-#include <cassert>
-#include <functional>
-#include <vector>
 #include "basics/Assert.hpp"
 #include "utility/Identity.hpp"
 

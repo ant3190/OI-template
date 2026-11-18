@@ -1,9 +1,5 @@
 #pragma once
 
-#include <algorithm>
-#include <cassert>
-#include <functional>
-#include <vector>
 #include "basics/Assert.hpp"
 #include "utility/Identity.hpp"
 
@@ -12,10 +8,16 @@ template <class S, class T, class Op = std::plus<>, class Apply = std::plus<>, c
 struct LazySegTree {
 public:
 	LazySegTree() : n(-1) {}
-	LazySegTree(int n) :
-		n((ASSERT(n > 0), n)), ht(n == 1 ? 0 : 32 - __builtin_clz(n - 1)), m(1 << ht),
-		tr(m << 1, identity()), tag(m, tag_identity()), vis(m) {}
-	LazySegTree(int n, S *v) : LazySegTree(n) {
+	LazySegTree(int n) { init(n); }
+	LazySegTree(int n, S *v) { init(n, v); }
+
+	void init(int N) {
+		ASSERT(N > 0);
+		n = N, ht = (n == 1 ? 0 : 32 - __builtin_clz(n - 1)), m = (1 << ht);
+		tr = std::vector<T>(m << 1, identity()), tag = std::vector<T>(m, tag_identity()), vis = std::vector<int>(m);
+	}
+	void init(int n, S *v) {
+		init(n);
 		for (int i = 1; i <= n; ++i) { tr[i + m - 1] = v[i]; }
 		for (int i = m - 1; i >= 1; --i) { pushup(i); }
 	}
